@@ -14,12 +14,12 @@ async function main() {
 
   // return
 
-  const CONTRACT_object = await ethers.getContractFactory("TheOpenFarmBank");
+  const CONTRACT_object = await ethers.getContractFactory("TheOpenFarmDAOsLotto");
   const deployedContract = await CONTRACT_object.deploy();
   await deployedContract.deployed();
-  console.log("Contract: Farm Bank | Address:", deployedContract.address);
-  let init_hash = await deployedContract.INIT_CODE_PAIR_HASH()
-  console.log("init_hash:", init_hash);
+  console.log("Contract: Farm Lotto | Address:", deployedContract.address);
+  // let init_hash = await deployedContract.INIT_CODE_PAIR_HASH()
+  // console.log("init_hash:", init_hash);
 }
 
 // Call the main function and catch if there is any error
