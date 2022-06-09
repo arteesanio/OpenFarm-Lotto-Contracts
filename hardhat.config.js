@@ -16,7 +16,7 @@ const POLYGONSCAN_KEY = process.env.POLYGONSCAN_KEY;
 const mumbai = { url: ALCHEMY_API_KEY_URL, accounts: [MUMBAI_PRIVATE_KEY], timeout: 100000, }
 
 module.exports = {
-	solidity: "0.8.11",
+	solidity: "0.8.4",
 	defaultNetwork: "mumbai",
 	mocha: {
 	  timeout: 60000
