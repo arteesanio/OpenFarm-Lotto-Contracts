@@ -5,6 +5,7 @@ pragma solidity ^0.8.4;
  * @dev Interface of the ERC20 standard as defined in the EIP.
  */
 interface IERC20 {
+    function allowance(address owner, address spender) external view returns (uint256);
     function balanceOf(address owner) external view returns (uint256);
     /**
      * @dev Moves `amount` tokens from the caller's account to `recipient`.
@@ -156,29 +157,10 @@ interface IOpenLotto {
     function newRound(uint256 proposalIndex, uint256 _amount) external;
 }
 
-/**
- * Minimal interface for Token containing only two functions
- * that we are interested in
- */
-interface IToken {
-    /// @dev balanceOf returns the number of NFTs owned by the given address
-    /// @param owner - address to fetch number of NFTs for
-    /// @return Returns the number of NFTs owned
-    function balanceOf(address owner) external view returns (uint256);
-
-    /// @dev tokenOfOwnerByIndex returns a tokenID at given index for owner
-    /// @param owner - address to fetch the NFT TokenID for
-    /// @param index - index of NFT in owned tokens array to fetch
-    /// @return Returns the TokenID of the NFT
-    function tokenOfOwnerByIndex(address owner, uint256 index)
-        external
-        view
-        returns (uint256);
-}
 
 contract TheOpenFarmDAO is Ownable {
 
-	uint256 public VOTE_COST = 1**18;
+	uint256 public VOTE_COST = 1**16;
 
     // We will write contract code here
 	// Create a struct named Proposal containing all relevant information
@@ -198,23 +180,13 @@ contract TheOpenFarmDAO is Ownable {
 	// Number of proposals that have been created
 	uint256 public numProposals;
 
-	address tokenLotto;
-	address ERC20;
-    address LottoERC20;
-
-	// Create a payable constructor which initializes the contract
-	// instances for FakeNFTMarketplace and CryptoDevsNFT
-	// The payable allows this constructor to accept an ETH deposit when it is being deployed
-	constructor(address _tokenLotto, address _ERC20, address _LottoERC20) payable {
-	    tokenLotto = _tokenLotto;
-        ERC20 = _ERC20;
-	    LottoERC20 = _LottoERC20;
-	}
+	address tokenLotto = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
+    address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
 
 	// Create a modifier which only allows a function to be
 	// called by someone who owns at least 1 CryptoDevsNFT
 	modifier DAOHolderOnly() {
-	    require(IERC20(ERC20).balanceOf(msg.sender) > 0, "NOT_A_DAO_MEMBER");
+        require(IERC20(LottoERC20).allowance(msg.sender, LottoERC20) > 0, "NOT_A_DAO_MEMBER");
 	    _;
 	}
 
@@ -312,152 +284,4 @@ contract TheOpenFarmDAO is Ownable {
 	receive() external payable {}
 
 	fallback() external payable {}
-}
-
-
-/*
-// 50000 tickets
-// 1 - 5000 = 5000	(0.1)
-// 6 - 1000 = 6000	(0.02)
-// 17 - 500 = 8500	(0.01)
-// 49 - 100 = 4900	(0.002)
-// 298 - 20 = 5960	(0.0004)
-// 4545 - 1 = 4545	(0.00002)
-
-// 4545
-// = 4545
-// 4545+5960
-// = 10405
-// 4545+5960+4900
-// = 15405
-// 4545+5960+4900+8500
-// = 23905
-// 4545+5960+4900+8500+6000
-// = 29905
-// 4545+5960+4900+8500+6000+5000
-// = 34905
-*/
-
-
-/*
-// 50000 tickets
-// 1 - 5000 = 5000
-// 6 - 1000 = 6000
-// 16 - 500 = 8000
-// 40 - 100 = 4000
-// 300 - 20 = 6000
-// 4000 - 1 = 4000
-
-// 4000
-// = 4000
-// 4000+6000
-// = 10000
-// 4000+6000+4000
-// = 14000
-// 4000+6000+4000+8000
-// = 22000
-// 4000+6000+4000+8000+6000
-// = 28000
-// 4000+6000+4000+8000+6000+4000
-// = 32000
-*/
-
-
-/*
-// 6000 tickets
-// 1 - 1000 = 1000
-// 3 - 500 = 1500
-// 5 - 100 = 500
-// 16 - 50 = 800
-// 30 - 20 = 600
-// 400 - 1 = 400
-
-// 400
-// = 400
-// 400+600
-// = 1000
-// 400+600+800
-// = 1800
-// 400+600+800+500
-// = 2300
-// 400+600+800+500+1500
-// = 3800
-// 400+600+800+500+1500+1000
-// = 4800
-*/
-
-interface IRandomResolver {
-    function getRandomNumber() external returns (bytes32 requestId);
-    function requestRandomNumber(uint256 userAddress) external returns (bytes32 requestId);
-    function userAddressesOf(bytes32 requestId) external returns (uint256);
-    function lastRequestId(uint256 userAddress) external returns (bytes32);
-    function randomResultsOf(bytes32 requestId) external returns (uint256);
-    function resetLastRandom(uint256 userAddress) external;
-    function lastRandomResultsOf(uint256 userAddress) external returns (uint256);
-}
-
-contract TheOpenFarmDAOsLotto is Context {
-
-	address LottoERC20 = 0xE5CD6B21455E87D5F8DaaB3a0AC1f0C728E09e66;
-	address RANDOM_RESOLVER = 0xE5CD6B21455E87D5F8DaaB3a0AC1f0C728E09e66;
-	address DAO_ADDRESS = 0xE5CD6B21455E87D5F8DaaB3a0AC1f0C728E09e66;
-
-    modifier onlyDAO() {
-        require(DAO_ADDRESS == _msgSender(), "caller is not the DAO");
-        _;
-    }
-
-    struct Round {
-        uint256 randomRequestBlock;
-        uint256 randomResult;
-        uint256 randomResultBlock;
-        uint256 lockedFunds;
-        uint256 wonAmount;
-
-        bytes32 randomRequestId;
-        uint8 lastResult;
-        bool redeemed;
-    }
-
-	uint256 public MIN_AMOUNT = 10**18;
-
-    mapping(uint256 => Round) public gameRounds;
-    mapping(uint256 => bool) public hasRequestedRandom;
-
-    event NewRandomRequest(uint256 indexed _proposalIndex, bytes32 requestId);
-
-    function resolveBet(uint256 _proposalIndex) external returns (bool) {
-        require(gameRounds[_proposalIndex].lockedFunds > 0, "PROPOSAL_DOESNT_EXIST");
-        require(gameRounds[_proposalIndex].randomRequestId != 0, "RANDOM_HASH_NOT_SET");
-        bytes32 requestId = gameRounds[_proposalIndex].randomRequestId;
-        require(IRandomResolver(RANDOM_RESOLVER).randomResultsOf(requestId) != 0, "RESULT_IS_NOT_DONE");
-
-        gameRounds[_proposalIndex].randomResultBlock = block.number;
-        gameRounds[_proposalIndex].randomResult = IRandomResolver(RANDOM_RESOLVER).randomResultsOf(requestId);
-        bool result = true;
-        // IRandomResolver(RANDOM_RESOLVER).resetLastRandom(_proposalIndex);
-        return result;
-    }
-
-    function newRound(uint256 _proposalIndex, uint256 _amount) external onlyDAO {
-        require(!hasRequestedRandom[_proposalIndex], "RANDOM_REQUEST_EXISTS");
-        require(gameRounds[_proposalIndex].lockedFunds == 0, "PROPOSAL_EXIST");
-        require(_amount > MIN_AMOUNT, "MINIMUN_ROUND_AMOUNT");
-
-        gameRounds[_proposalIndex].lockedFunds = _amount;
-        assert(IERC20(LottoERC20).transferFrom(DAO_ADDRESS, address(this), _amount));
-
-        requestResolveRound(_proposalIndex);
-    }
-
-    function requestResolveRound(uint256 _proposalIndex) internal {
-        require(gameRounds[_proposalIndex].lockedFunds > 0, "PROPOSAL_DOESNT_EXIST");
-        require(!hasRequestedRandom[_proposalIndex], "RANDOM_REQUEST_EXISTS");
-
-        hasRequestedRandom[_proposalIndex] = true;
-
-        gameRounds[_proposalIndex].randomRequestId = IRandomResolver(RANDOM_RESOLVER).requestRandomNumber(_proposalIndex);
-        gameRounds[_proposalIndex].randomRequestBlock = block.number;
-        emit NewRandomRequest(_proposalIndex, gameRounds[_proposalIndex].randomRequestId);
-    }
 }

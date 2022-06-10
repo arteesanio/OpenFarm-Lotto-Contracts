@@ -253,6 +253,7 @@ interface VRFCoordinatorV2Interface {
   function cancelSubscription(uint64 subId, address to) external;
 }
 
+// SPDX-License-Identifier: MIT
 // File: docs.chain.link/samples/VRF/VRFv2Consumer.sol
 
 
@@ -294,10 +295,10 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
   uint256 public s_requestId;
   address s_owner;
 
-  constructor(uint64 subscriptionId) VRFConsumerBaseV2(vrfCoordinator) {
+  constructor() VRFConsumerBaseV2(vrfCoordinator) {
     COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
     s_owner = msg.sender;
-    s_subscriptionId = subscriptionId;
+    s_subscriptionId = 75;
   }
 
   // Assumes the subscription is funded sufficiently.
