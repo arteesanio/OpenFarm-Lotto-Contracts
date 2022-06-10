@@ -155,6 +155,10 @@ interface IOpenLotto {
 
     function newRound(uint256 proposalIndex, uint256 _amount) external;
 }
+interface IOpenDAO {
+    function getVotes(uint256 _proposalIndex, address _voter) external view returns (uint256);
+    function getVote(uint256 _proposalIndex, address _voter) external view returns (uint256);
+}
 
 /**
  * Minimal interface for Token containing only two functions
@@ -179,12 +183,12 @@ interface IToken {
 
 /*
 // 50000 tickets
-// 1 - 5000 = 5000	(0.1)
-// 6 - 1000 = 6000	(0.02)
-// 17 - 500 = 8500	(0.01)
-// 49 - 100 = 4900	(0.002)
-// 298 - 20 = 5960	(0.0004)
-// 4545 - 1 = 4545	(0.00002)
+// 1 - 5000 = 5000  (0.1)
+// 6 - 1000 = 6000  (0.02)
+// 17 - 500 = 8500  (0.01)
+// 49 - 100 = 4900  (0.002)
+// 298 - 20 = 5960  (0.0004)
+// 4545 - 1 = 4545  (0.00002)
 
 // 4545
 // = 4545
@@ -260,14 +264,15 @@ interface IRandomResolver {
 
 contract TheOpenFarmDAOsLotto is Ownable {
 
-	address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
-	address RANDOM_RESOLVER = 0xE5CD6B21455E87D5F8DaaB3a0AC1f0C728E09e66;
+    address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
+    address RANDOM_RESOLVER = 0xE5CD6B21455E87D5F8DaaB3a0AC1f0C728E09e66;
 
     struct Round {
         uint256 randomRequestBlock;
         uint256 randomResult;
         uint256 randomResultBlock;
         uint256 lockedFunds;
+        uint256 votes;
         uint256 wonAmount;
 
         bytes32 randomRequestId;
@@ -275,7 +280,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
         bool redeemed;
     }
 
-	uint256 public MIN_AMOUNT = 10**18;
+    uint256 public MIN_AMOUNT = 10**18;
 
     mapping(uint256 => Round) public gameRounds;
     mapping(uint256 => bool) public hasRequestedRandom;
@@ -295,13 +300,14 @@ contract TheOpenFarmDAOsLotto is Ownable {
         return result;
     }
 
-    function newRound(uint256 _proposalIndex, uint256 _amount) external onlyOwner {
+    function newRound(uint256 _proposalIndex, uint256 _amount, uint256 _votes) external onlyOwner {
         require(!hasRequestedRandom[_proposalIndex], "RANDOM_REQUEST_EXISTS");
         require(gameRounds[_proposalIndex].lockedFunds == 0, "PROPOSAL_EXIST");
         require(_amount > MIN_AMOUNT, "MINIMUN_ROUND_AMOUNT");
 
         gameRounds[_proposalIndex].lockedFunds = _amount;
         assert(IERC20(LottoERC20).transferFrom(owner(), address(this), _amount));
+        gameRounds[_proposalIndex].votes = _votes;
 
         requestResolveRound(_proposalIndex);
     }

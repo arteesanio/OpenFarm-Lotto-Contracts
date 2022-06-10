@@ -154,134 +154,156 @@ interface IOpenLotto {
     /// @param _tokenId - the fake NFT tokenID to purchase
     function purchase(uint256 _tokenId) external payable;
 
-    function newRound(uint256 proposalIndex, uint256 _amount) external;
+    function newRound(uint256 proposalIndex, uint256 _amount, uint256 _votes) external;
 }
 
 
 contract TheOpenFarmDAO is Ownable {
 
-	uint256 public VOTE_COST = 1**16;
+    uint256 public VOTE_COST = 1**16;
 
     // We will write contract code here
-	// Create a struct named Proposal containing all relevant information
-	struct Proposal {
-	    uint256 amount;
-	    uint256 amountVotes;
-	    // deadline - the UNIX timestamp until which this proposal is active. Proposal can be executed after the deadline has been exceeded.
-	    uint256 deadline;
-	    // executed - whether or not this proposal has been executed yet. Cannot be executed before the deadline has been exceeded.
-	    bool executed;
-	    // voters - a mapping of CryptoDevsNFT tokenIDs to booleans indicating whether that NFT has already been used to cast a vote or not
-	    mapping(address => uint256) voters;
-	}
+    // Create a struct named Proposal containing all relevant information
+    struct Proposal {
+        uint256 amount;
+        uint256 amountVotes;
+        // deadline - the UNIX timestamp until which this proposal is active. Proposal can be executed after the deadline has been exceeded.
+        uint256 deadline;
+        // executed - whether or not this proposal has been executed yet. Cannot be executed before the deadline has been exceeded.
+        bool executed;
+        // voters - a mapping of CryptoDevsNFT tokenIDs to booleans indicating whether that NFT has already been used to cast a vote or not
+        mapping(address => uint256) voters;
+        mapping(address => uint256) votersVotes;
+    }
 
-	// Create a mapping of ID to Proposal
-	mapping(uint256 => Proposal) public proposals;
-	// Number of proposals that have been created
-	uint256 public numProposals;
+    // Create a mapping of ID to Proposal
+    mapping(uint256 => Proposal) public proposals;
+    // Number of proposals that have been created
+    uint256 public numProposals;
 
-	address tokenLotto = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
+    address tokenLotto = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
     address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
 
-	// Create a modifier which only allows a function to be
-	// called by someone who owns at least 1 CryptoDevsNFT
-	modifier DAOHolderOnly() {
+    // Create a modifier which only allows a function to be
+    // called by someone who owns at least 1 CryptoDevsNFT
+    modifier DAOHolderOnly() {
         require(IERC20(LottoERC20).allowance(msg.sender, LottoERC20) > 0, "NOT_A_DAO_MEMBER");
-	    _;
-	}
+        _;
+    }
 
-	// Create a modifier which only allows a function to be
-	// called if the given proposal's deadline has not been exceeded yet
-	modifier activeProposalOnly(uint256 proposalIndex) {
-	    require(
-	        proposals[proposalIndex].deadline > block.timestamp,
-	        "DEADLINE_EXCEEDED"
-	    );
-	    _;
-	}
+    // Create a modifier which only allows a function to be
+    // called if the given proposal's deadline has not been exceeded yet
+    modifier activeProposalOnly(uint256 proposalIndex) {
+        require(
+            proposals[proposalIndex].deadline > block.timestamp,
+            "DEADLINE_EXCEEDED"
+        );
+        _;
+    }
 
-	// Create a modifier which only allows a function to be
-	// called if the given proposals' deadline HAS been exceeded
-	// and if the proposal has not yet been executed
-	modifier inactiveProposalOnly(uint256 proposalIndex) {
-	    require(
-	        proposals[proposalIndex].deadline <= block.timestamp,
-	        "DEADLINE_NOT_EXCEEDED"
-	    );
-	    require(
-	        proposals[proposalIndex].executed == false,
-	        "PROPOSAL_ALREADY_EXECUTED"
-	    );
-	    _;
-	}
+    // Create a modifier which only allows a function to be
+    // called if the given proposals' deadline HAS been exceeded
+    // and if the proposal has not yet been executed
+    modifier inactiveProposalOnly(uint256 proposalIndex) {
+        require(
+            proposals[proposalIndex].deadline <= block.timestamp,
+            "DEADLINE_NOT_EXCEEDED"
+        );
+        require(
+            proposals[proposalIndex].executed == false,
+            "PROPOSAL_ALREADY_EXECUTED"
+        );
+        _;
+    }
 
-	/// @dev createProposal allows a DAO Token holder to create a new proposal in the DAO
-	/// @param _amount - the tokenID of the NFT to be purchased from FakeNFTMarketplace if this proposal passes
-	/// @return Returns the proposal index for the newly created proposal
-	function createProposal(uint256 _amount)
-	    external
-	    DAOHolderOnly
-	    returns (uint256)
-	{
-	    Proposal storage proposal = proposals[numProposals];
-	    proposal.amount = _amount;
-	    // Set the proposal's voting deadline to be (current time + 5 minutes)
-	    proposal.deadline = block.timestamp + 5 minutes;
+    /// @dev createProposal allows a DAO Token holder to create a new proposal in the DAO
+    /// @param _amount - the tokenID of the NFT to be purchased from FakeNFTMarketplace if this proposal passes
+    /// @return Returns the proposal index for the newly created proposal
+    function createProposal(uint256 _amount)
+        external
+        DAOHolderOnly
+        returns (uint256)
+    {
+        Proposal storage proposal = proposals[numProposals];
+        proposal.amount = _amount;
+        // Set the proposal's voting deadline to be (current time + 5 minutes)
+        proposal.deadline = block.timestamp + 5 minutes;
 
-	    numProposals++;
+        numProposals++;
 
-	    return numProposals - 1;
-	}
+        return numProposals - 1;
+    }
 
-	/// @dev voteOnProposal allows a DAO Token holder to cast their vote on an active proposal
-	/// @param _proposalIndex - the index of the proposal to vote on in the proposals array
-	/// @param _amount - the type of vote they want to cast
-	function voteOnProposal(uint256 _proposalIndex, uint256 _amount)
-	    external
-	    DAOHolderOnly
-	    activeProposalOnly(_proposalIndex)
-	{
-	    Proposal storage proposal = proposals[_proposalIndex];
+    function getVotes(uint256 _proposalIndex, address _voter)
+        external
+        view
+        returns (uint256)
+    {
+        Proposal storage proposal = proposals[_proposalIndex];
+        require(proposal.votersVotes[_voter] != 0, "NOT_FOUND");
+        return proposal.votersVotes[_voter];
+    }
+    function getVote(uint256 _proposalIndex, address _voter)
+        external
+        view
+        returns (uint256)
+    {
+        Proposal storage proposal = proposals[_proposalIndex];
+        require(proposal.voters[_voter] != 0, "NOT_FOUND");
+        return proposal.voters[_voter];
+    }
+
+    /// @dev voteOnProposal allows a DAO Token holder to cast their vote on an active proposal
+    /// @param _proposalIndex - the index of the proposal to vote on in the proposals array
+    /// @param _amount - the type of vote they want to cast
+    function voteOnProposal(uint256 _proposalIndex, uint256 _amount)
+        external
+        DAOHolderOnly
+        activeProposalOnly(_proposalIndex)
+    {
+        Proposal storage proposal = proposals[_proposalIndex];
 
         uint256 memberBalance = IERC20(LottoERC20).balanceOf(msg.sender);
-	    uint256 amount = VOTE_COST * _amount;
-	    require(memberBalance >= amount, "NOT_ENOUGH_BALANCE");
-	    require(proposal.voters[msg.sender] == 0, "ALREADY_VOTED");
-	    proposal.voters[msg.sender] = amount;
+        uint256 amount = VOTE_COST * _amount;
+        require(memberBalance >= amount, "NOT_ENOUGH_BALANCE");
+        require(proposal.votersVotes[msg.sender] == 0, "ALREADY_VOTED");
+        require(_amount > 0, "INVALID_VOTE_COUNT");
+        proposal.votersVotes[msg.sender] = _amount;
+        proposal.voters[msg.sender] = proposal.amountVotes;
         proposal.amountVotes += _amount;
-		assert(IERC20(LottoERC20).transferFrom(msg.sender, address(this), amount));
-	}
+        assert(IERC20(LottoERC20).transferFrom(msg.sender, address(this), amount));
+    }
 
-	/// @dev executeProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
-	/// @param proposalIndex - the index of the proposal to execute in the proposals array
-	function executeProposal(uint256 proposalIndex)
-	    external
-	    DAOHolderOnly
-	    inactiveProposalOnly(proposalIndex)
-	{
-	    Proposal storage proposal = proposals[proposalIndex];
+    /// @dev executeProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
+    /// @param proposalIndex - the index of the proposal to execute in the proposals array
+    function executeProposal(uint256 proposalIndex)
+        external
+        DAOHolderOnly
+        inactiveProposalOnly(proposalIndex)
+    {
+        Proposal storage proposal = proposals[proposalIndex];
 
         require(proposal.amountVotes >= proposal.amount, "NOT_ENOUGH_VOTES");
         require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.amountVotes, "NOT_ENOUGH_DAO_FUNDS");
         require(IERC20(LottoERC20).balanceOf(tokenLotto) >= proposal.amountVotes, "NOT_ENOUGH_LOTTO_FUNDS");
 
-        IOpenLotto(tokenLotto).newRound(proposalIndex, proposal.amountVotes);
-	    proposal.executed = true;
-	}
+        IOpenLotto(tokenLotto).newRound(proposalIndex, proposal.amount, proposal.amountVotes);
+        proposal.executed = true;
+    }
 
-	/// @dev withdrawEther allows the contract owner (deployer) to withdraw the ETH from the contract
-	function withdrawEther() external onlyOwner {
-	    payable(owner()).transfer(address(this).balance);
-	}
+    /// @dev withdrawEther allows the contract owner (deployer) to withdraw the ETH from the contract
+    function withdrawEther() external onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+    }
 
-	/// @dev withdrawBalance allows the contract owner (deployer) to withdraw IERC20(LottoERC20).balanceOf from the contract
-	function withdrawBalance() external onlyOwner {
-		assert(IERC20(LottoERC20).transferFrom (address(this), owner(), IERC20(LottoERC20).balanceOf(address(this)) ) );
-	}
+    /// @dev withdrawBalance allows the contract owner (deployer) to withdraw IERC20(LottoERC20).balanceOf from the contract
+    function withdrawBalance() external onlyOwner {
+        assert(IERC20(LottoERC20).transferFrom (address(this), owner(), IERC20(LottoERC20).balanceOf(address(this)) ) );
+    }
 
-	// The following two functions allow the contract to accept ETH deposits
-	// directly from a wallet without calling a function
-	receive() external payable {}
+    // The following two functions allow the contract to accept ETH deposits
+    // directly from a wallet without calling a function
+    receive() external payable {}
 
-	fallback() external payable {}
+    fallback() external payable {}
 }
