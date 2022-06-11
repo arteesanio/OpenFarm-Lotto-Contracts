@@ -208,7 +208,7 @@ interface IRandomResolver {
 contract TheOpenFarmDAOsLotto is Ownable {
 
     address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
-    address RANDOM_RESOLVER = 0xE5CD6B21455E87D5F8DaaB3a0AC1f0C728E09e66;
+    address RANDOM_RESOLVER = 0x79E47D2e40c96e7B1Ac3220B9Fe1a31573F1f948;
 
     struct Round {
         uint256 randomRequestBlock;
