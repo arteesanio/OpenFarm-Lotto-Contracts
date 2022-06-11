@@ -181,14 +181,14 @@ interface IToken {
 }
 
 /*
-// 1000 tickets
-// 1 - 200 = 200  - 0.2
-// 2 - 50 = 100   - 0.05
-// 10 - 10 = 100  - 0.01
-// 20 - 5 = 100   - 0.005
-// 50 - 2 = 100   - 0.002
-// 100 - 1 = 100  - 0.001
-// total = 700
+// $1000 tickets
+// 1 - 200 = 200  - 0.001 - 0.2 %
+// 2 - 50 = 100   - 0.002 - 0.05 %
+// 10 - 10 = 100  - 0.01 - 0.01 %
+// 20 - 5 = 100   - 0.02 - 0.005 %
+// 50 - 2 = 100   - 0.05 - 0.002 %
+// 100 - 1 = 100  - 0.1 - 0.001 %
+// 183 user = total = $700
 */
 
 interface IRandomResolver {
@@ -220,7 +220,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         bytes32 randomRequestId;
         uint8 lastResult;
-        mapping(uint256 => bool) redeemed;
+        mapping(uint256 => uint256) redeemed;
     }
 
     uint256 public MIN_AMOUNT = 10**18;
@@ -231,11 +231,15 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
     event NewRandomRequest(uint256 indexed _proposalIndex, bytes32 requestId);
 
+    function getVoteRedeemd(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
+        return gameRounds[_proposalIndex].redeemed[_votePos];
+    }
+
     function getVoteResult(uint256 _proposalIndex, uint256 _voteIndexDistance, address _voter) external returns (uint256) {
         require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
         uint256 voteIndex = IOpenDAO(owner()).getVote(_proposalIndex, _voter);
         uint256 votePos = voteIndex + _voteIndexDistance;
-        require(gameRounds[_proposalIndex].redeemed[votePos], "RESULT_IS_NOT_DONE");
+        require(gameRounds[_proposalIndex].redeemed[votePos] == 0, "RESULT_ALREADY_EXISTS");
         uint256 oddRoundVoteLength = gameRounds[_proposalIndex].votes;
         if (oddRoundVoteLength % 2 == 0)
         {
@@ -243,7 +247,10 @@ contract TheOpenFarmDAOsLotto is Ownable {
         }
         
         uint256 winNumber = (randomRequests[_proposalIndex] + voteIndex + _voteIndexDistance) % oddRoundVoteLength;
-        gameRounds[_proposalIndex].redeemed[votePos] = true;
+        gameRounds[_proposalIndex].redeemed[votePos] = 1;
+        uint256 percentIndex = winNumber / oddRoundVoteLength;
+        gameRounds[_proposalIndex].redeemed[votePos] += percentIndex;
+        
         return winNumber;
     }
 
