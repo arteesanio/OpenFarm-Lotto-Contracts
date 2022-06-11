@@ -225,6 +225,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
     uint256 public MIN_AMOUNT = 10**18;
 
+    mapping(uint256 => uint256[6]) public redeems;
     mapping(uint256 => uint256) public randomRequests;
     mapping(uint256 => Round) public gameRounds;
     mapping(uint256 => bool) public hasRequestedRandom;
@@ -235,21 +236,71 @@ contract TheOpenFarmDAOsLotto is Ownable {
         return gameRounds[_proposalIndex].redeemed[_votePos];
     }
 
-    function getVoteResult(uint256 _proposalIndex, uint256 _voteIndexDistance, address _voter) external returns (uint256) {
+    function getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
         require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
         uint256 voteIndex = IOpenDAO(owner()).getVote(_proposalIndex, _voter);
-        uint256 votePos = voteIndex + _voteIndexDistance;
-        require(gameRounds[_proposalIndex].redeemed[votePos] == 0, "RESULT_ALREADY_EXISTS");
+        uint256 voteDistance = IOpenDAO(owner()).getVotes(_proposalIndex, _voter);
+        require(_votePos >= voteIndex && _votePos <= voteIndex + voteDistance, "NOT_VOTE_OWNER");
+        require(gameRounds[_proposalIndex].redeemed[_votePos] == 0, "RESULT_ALREADY_EXISTS");
         uint256 oddRoundVoteLength = gameRounds[_proposalIndex].votes;
         if (oddRoundVoteLength % 2 == 0)
         {
             oddRoundVoteLength++;
         }
         
-        uint256 winNumber = (randomRequests[_proposalIndex] + voteIndex + _voteIndexDistance) % oddRoundVoteLength;
-        gameRounds[_proposalIndex].redeemed[votePos] = 1;
-        uint256 percentIndex = winNumber / oddRoundVoteLength;
-        gameRounds[_proposalIndex].redeemed[votePos] += percentIndex;
+        uint256 winNumber = (randomRequests[_proposalIndex] + _votePos) % oddRoundVoteLength;
+        uint256 percentIndex = 1000 * (winNumber / oddRoundVoteLength);
+        gameRounds[_proposalIndex].redeemed[_votePos] = percentIndex;
+
+        if (percentIndex < 1)
+        {
+            if (redeems[_proposalIndex][0] < 1)
+            {
+                uint256 winAmount = gameRounds[_proposalIndex].lockedFunds * 2 / 10;
+                redeems[_proposalIndex][0] = 1;
+                assert(IERC20(LottoERC20).transferFrom(owner(), address(this), winAmount));
+            }
+        } else if (percentIndex < 2)
+        {
+            if (redeems[_proposalIndex][1] < 2)
+            {
+                uint256 winAmount = gameRounds[_proposalIndex].lockedFunds * 5 / 100;
+                redeems[_proposalIndex][1]++;
+                assert(IERC20(LottoERC20).transferFrom(owner(), address(this), winAmount));
+            }
+        } else if (percentIndex < 10)
+        {
+            if (redeems[_proposalIndex][2] < 10)
+            {
+                uint256 winAmount = gameRounds[_proposalIndex].lockedFunds * 1 / 100;
+                redeems[_proposalIndex][2]++;
+                assert(IERC20(LottoERC20).transferFrom(owner(), address(this), winAmount));
+            }
+        } else if (percentIndex < 20)
+        {
+            if (redeems[_proposalIndex][3] < 20)
+            {
+                uint256 winAmount = gameRounds[_proposalIndex].lockedFunds * 5 / 1000;
+                redeems[_proposalIndex][3]++;
+                assert(IERC20(LottoERC20).transferFrom(owner(), address(this), winAmount));
+            }
+        } else if (percentIndex < 50)
+        {
+            if (redeems[_proposalIndex][4] < 50)
+            {
+                uint256 winAmount = gameRounds[_proposalIndex].lockedFunds * 2 / 1000;
+                redeems[_proposalIndex][4]++;
+                assert(IERC20(LottoERC20).transferFrom(owner(), address(this), winAmount));
+            }
+        } else if (percentIndex < 100)
+        {
+            if (redeems[_proposalIndex][5] < 100)
+            {
+                uint256 winAmount = gameRounds[_proposalIndex].lockedFunds * 1 / 1000;
+                redeems[_proposalIndex][5]++;
+                assert(IERC20(LottoERC20).transferFrom(owner(), address(this), winAmount));
+            }
+        }
         
         return winNumber;
     }

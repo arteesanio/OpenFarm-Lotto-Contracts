@@ -160,7 +160,7 @@ interface IOpenLotto {
 
 contract TheOpenFarmDAO is Ownable {
 
-    uint256 public VOTE_COST = 1**16;
+    uint256 public VOTE_COST = 1**15;
 
     // We will write contract code here
     // Create a struct named Proposal containing all relevant information
