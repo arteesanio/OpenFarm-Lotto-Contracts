@@ -220,7 +220,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         bytes32 randomRequestId;
         uint8 lastResult;
-        // bool redeemed;
+        mapping(uint256 => bool) redeemed;
     }
 
     uint256 public MIN_AMOUNT = 10**18;
@@ -231,16 +231,19 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
     event NewRandomRequest(uint256 indexed _proposalIndex, bytes32 requestId);
 
-    function getVoterResult(uint256 _proposalIndex, uint256 _voteIndexDistance, address _voter) external view returns (uint256) {
+    function getVoteResult(uint256 _proposalIndex, uint256 _voteIndexDistance, address _voter) external returns (uint256) {
         require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
+        uint256 voteIndex = IOpenDAO(owner()).getVote(_proposalIndex, _voter);
+        uint256 votePos = voteIndex + _voteIndexDistance;
+        require(gameRounds[_proposalIndex].redeemed[votePos], "RESULT_IS_NOT_DONE");
         uint256 oddRoundVoteLength = gameRounds[_proposalIndex].votes;
         if (oddRoundVoteLength % 2 == 0)
         {
             oddRoundVoteLength++;
         }
-        uint256 voteIndex = IOpenDAO(owner()).getVote(_proposalIndex, _voter);
         
         uint256 winNumber = (randomRequests[_proposalIndex] + voteIndex + _voteIndexDistance) % oddRoundVoteLength;
+        gameRounds[_proposalIndex].redeemed[votePos] = true;
         return winNumber;
     }
 
