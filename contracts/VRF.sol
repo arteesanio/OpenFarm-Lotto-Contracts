@@ -269,12 +269,12 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
 
   // Rinkeby coordinator. For other networks,
   // see https://docs.chain.link/docs/vrf-contracts/#configurations
-  address vrfCoordinator = 0x6168499c0cFfCaCD319c818142124B7A15E857ab;
+  address vrfCoordinator = 0xAE975071Be8F8eE67addBC1A82488F1C24858067 ;
 
   // The gas lane to use, which specifies the maximum gas price to bump to.
   // For a list of available gas lanes on each network,
   // see https://docs.chain.link/docs/vrf-contracts/#configurations
-  bytes32 keyHash = 0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc;
+  bytes32 keyHash = 0x6e099d640cde6de9d40ac749b4b594126b0169747122711109c9985d47751f93;
 
   // Depends on the number of requested values that you want sent to the
   // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
@@ -294,15 +294,21 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
   uint256[] public s_randomWords;
   uint256 public s_requestId;
   address s_owner;
+  address requester;
 
   constructor() VRFConsumerBaseV2(vrfCoordinator) {
     COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
     s_owner = msg.sender;
+    requester = msg.sender;
     s_subscriptionId = 75;
   }
 
+  function requestRandomWords(address _requester) external onlyOwner {
+    requester = _requester;
+  }
+
   // Assumes the subscription is funded sufficiently.
-  function requestRandomWords() external onlyOwner {
+  function requestRandomWords() external onlyRequester {
     // Will revert if subscription is not set and funded.
     s_requestId = COORDINATOR.requestRandomWords(
       keyHash,
@@ -322,6 +328,10 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
 
   modifier onlyOwner() {
     require(msg.sender == s_owner);
+    _;
+  }
+  modifier onlyRequester() {
+    require(msg.sender == requester);
     _;
   }
 }
