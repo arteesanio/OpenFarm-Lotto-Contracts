@@ -180,76 +180,15 @@ interface IToken {
         returns (uint256);
 }
 
-
 /*
-// 50000 tickets
-// 1 - 5000 = 5000  (0.1)
-// 6 - 1000 = 6000  (0.02)
-// 17 - 500 = 8500  (0.01)
-// 49 - 100 = 4900  (0.002)
-// 298 - 20 = 5960  (0.0004)
-// 4545 - 1 = 4545  (0.00002)
-
-// 4545
-// = 4545
-// 4545+5960
-// = 10405
-// 4545+5960+4900
-// = 15405
-// 4545+5960+4900+8500
-// = 23905
-// 4545+5960+4900+8500+6000
-// = 29905
-// 4545+5960+4900+8500+6000+5000
-// = 34905
-*/
-
-
-/*
-// 50000 tickets
-// 1 - 5000 = 5000
-// 6 - 1000 = 6000
-// 16 - 500 = 8000
-// 40 - 100 = 4000
-// 300 - 20 = 6000
-// 4000 - 1 = 4000
-
-// 4000
-// = 4000
-// 4000+6000
-// = 10000
-// 4000+6000+4000
-// = 14000
-// 4000+6000+4000+8000
-// = 22000
-// 4000+6000+4000+8000+6000
-// = 28000
-// 4000+6000+4000+8000+6000+4000
-// = 32000
-*/
-
-
-/*
-// 6000 tickets
-// 1 - 1000 = 1000
-// 3 - 500 = 1500
-// 5 - 100 = 500
-// 16 - 50 = 800
-// 30 - 20 = 600
-// 400 - 1 = 400
-
-// 400
-// = 400
-// 400+600
-// = 1000
-// 400+600+800
-// = 1800
-// 400+600+800+500
-// = 2300
-// 400+600+800+500+1500
-// = 3800
-// 400+600+800+500+1500+1000
-// = 4800
+// 1000 tickets
+// 1 - 200 = 200  - 0.2
+// 2 - 50 = 100   - 0.05
+// 10 - 10 = 100  - 0.01
+// 20 - 5 = 100   - 0.005
+// 50 - 2 = 100   - 0.002
+// 100 - 1 = 100  - 0.001
+// total = 700
 */
 
 interface IRandomResolver {
@@ -257,13 +196,13 @@ interface IRandomResolver {
     function s_requestId() external returns (bytes32);
     function s_randomWords0() external returns (uint256);
 
-    function getRandomNumber() external returns (bytes32 requestId);
-    function requestRandomNumber(uint256 userAddress) external returns (bytes32 requestId);
-    function userAddressesOf(bytes32 requestId) external returns (uint256);
-    function lastRequestId(uint256 userAddress) external returns (bytes32);
-    function randomResultsOf(bytes32 requestId) external returns (uint256);
-    function resetLastRandom(uint256 userAddress) external;
-    function lastRandomResultsOf(uint256 userAddress) external returns (uint256);
+    // function getRandomNumber() external returns (bytes32 requestId);
+    // function requestRandomNumber(uint256 userAddress) external returns (bytes32 requestId);
+    // function userAddressesOf(bytes32 requestId) external returns (uint256);
+    // function lastRequestId(uint256 userAddress) external returns (bytes32);
+    // function randomResultsOf(bytes32 requestId) external returns (uint256);
+    // function resetLastRandom(uint256 userAddress) external;
+    // function lastRandomResultsOf(uint256 userAddress) external returns (uint256);
 }
 
 contract TheOpenFarmDAOsLotto is Ownable {
@@ -292,11 +231,24 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
     event NewRandomRequest(uint256 indexed _proposalIndex, bytes32 requestId);
 
+    function getVoterResult(uint256 _proposalIndex, uint256 _voteIndexDistance, address _voter) external returns (uint256) {
+        require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
+        uint256 oddRoundVoteLength = gameRounds[_proposalIndex].votes;
+        if (oddRoundVoteLength % 2 == 0)
+        {
+            oddRoundVoteLength++;
+        }
+        uint256 voteIndex = IOpenDAO(owner()).getVote(_proposalIndex, _voter);
+        
+        uint256 winNumber = (randomRequests[_proposalIndex] + voteIndex + _voteIndexDistance) % oddRoundVoteLength;
+        return winNumber;
+    }
+
     function resolveBet(uint256 _proposalIndex) external returns (bool) {
         require(gameRounds[_proposalIndex].lockedFunds > 0, "PROPOSAL_DOESNT_EXIST");
         bytes32 requestId = gameRounds[_proposalIndex].randomRequestId;
         require(requestId == IRandomResolver(RANDOM_RESOLVER).s_requestId(), "REQUEST_NOT_CURRENT");
-        require(randomRequests[_proposalIndex] == 0, "RESULT_IS_NOT_DONE");
+        require(randomRequests[_proposalIndex] == 0, "RESULT_ALREADY_DONE");
 
         gameRounds[_proposalIndex].randomResultBlock = block.number;
         randomRequests[_proposalIndex] = IRandomResolver(RANDOM_RESOLVER).s_randomWords0();

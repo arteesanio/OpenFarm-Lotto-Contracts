@@ -329,6 +329,10 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
   function s_randomWords0() external view returns (uint256) {
     return s_randomWords[0];
   }
+  
+  function s_randomWords1() external view returns (uint256) {
+    return s_randomWords[1];
+  }
 
   modifier onlyOwner() {
     require(msg.sender == s_owner);
