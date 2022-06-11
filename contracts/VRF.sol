@@ -303,7 +303,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
     s_subscriptionId = 75;
   }
 
-  function requestRandomWords(address _requester) external onlyOwner {
+  function setRequester(address _requester) external onlyOwner {
     requester = _requester;
   }
 
@@ -324,6 +324,10 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
     uint256[] memory randomWords
   ) internal override {
     s_randomWords = randomWords;
+  }
+  
+  function s_randomWords0() external view returns (uint256) {
+    return s_randomWords[0];
   }
 
   modifier onlyOwner() {

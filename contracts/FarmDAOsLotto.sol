@@ -253,6 +253,10 @@ interface IToken {
 */
 
 interface IRandomResolver {
+    function requestRandomWords() external;
+    function s_requestId() external returns (bytes32);
+    function s_randomWords0() external returns (uint256);
+
     function getRandomNumber() external returns (bytes32 requestId);
     function requestRandomNumber(uint256 userAddress) external returns (bytes32 requestId);
     function userAddressesOf(bytes32 requestId) external returns (uint256);
@@ -277,11 +281,12 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         bytes32 randomRequestId;
         uint8 lastResult;
-        bool redeemed;
+        // bool redeemed;
     }
 
     uint256 public MIN_AMOUNT = 10**18;
 
+    mapping(uint256 => uint256) public randomRequests;
     mapping(uint256 => Round) public gameRounds;
     mapping(uint256 => bool) public hasRequestedRandom;
 
@@ -289,12 +294,13 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
     function resolveBet(uint256 _proposalIndex) external returns (bool) {
         require(gameRounds[_proposalIndex].lockedFunds > 0, "PROPOSAL_DOESNT_EXIST");
-        require(gameRounds[_proposalIndex].randomRequestId != 0, "RANDOM_HASH_NOT_SET");
         bytes32 requestId = gameRounds[_proposalIndex].randomRequestId;
-        require(IRandomResolver(RANDOM_RESOLVER).randomResultsOf(requestId) != 0, "RESULT_IS_NOT_DONE");
+        require(requestId == IRandomResolver(RANDOM_RESOLVER).s_requestId(), "REQUEST_NOT_CURRENT");
+        require(randomRequests[_proposalIndex] == 0, "RESULT_IS_NOT_DONE");
 
         gameRounds[_proposalIndex].randomResultBlock = block.number;
-        gameRounds[_proposalIndex].randomResult = IRandomResolver(RANDOM_RESOLVER).randomResultsOf(requestId);
+        randomRequests[_proposalIndex] = IRandomResolver(RANDOM_RESOLVER).s_randomWords0();
+        gameRounds[_proposalIndex].randomResult = randomRequests[_proposalIndex];
         bool result = true;
         // IRandomResolver(RANDOM_RESOLVER).resetLastRandom(_proposalIndex);
         return result;
@@ -318,7 +324,8 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         hasRequestedRandom[_proposalIndex] = true;
 
-        gameRounds[_proposalIndex].randomRequestId = IRandomResolver(RANDOM_RESOLVER).requestRandomNumber(_proposalIndex);
+        IRandomResolver(RANDOM_RESOLVER).requestRandomWords();
+        gameRounds[_proposalIndex].randomRequestId = IRandomResolver(RANDOM_RESOLVER).s_requestId();
         gameRounds[_proposalIndex].randomRequestBlock = block.number;
         emit NewRandomRequest(_proposalIndex, gameRounds[_proposalIndex].randomRequestId);
     }
