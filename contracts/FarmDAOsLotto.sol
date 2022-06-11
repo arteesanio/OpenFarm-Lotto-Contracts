@@ -224,6 +224,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
     }
 
     uint256 public MIN_AMOUNT = 10**18;
+    uint256 public MIN_VOTES = 1000;
 
     mapping(uint256 => uint256[6]) public redeems;
     mapping(uint256 => uint256) public randomRequests;
@@ -323,6 +324,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
         require(!hasRequestedRandom[_proposalIndex], "RANDOM_REQUEST_EXISTS");
         require(gameRounds[_proposalIndex].lockedFunds == 0, "PROPOSAL_EXIST");
         require(_amount > MIN_AMOUNT, "MINIMUN_ROUND_AMOUNT");
+        require(_votes > MIN_VOTES, "MINIMUN_VOTES");
 
         gameRounds[_proposalIndex].lockedFunds = _amount;
         assert(IERC20(LottoERC20).transferFrom(owner(), address(this), _amount));
