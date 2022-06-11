@@ -231,7 +231,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
     event NewRandomRequest(uint256 indexed _proposalIndex, bytes32 requestId);
 
-    function getVoterResult(uint256 _proposalIndex, uint256 _voteIndexDistance, address _voter) external returns (uint256) {
+    function getVoterResult(uint256 _proposalIndex, uint256 _voteIndexDistance, address _voter) external view returns (uint256) {
         require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
         uint256 oddRoundVoteLength = gameRounds[_proposalIndex].votes;
         if (oddRoundVoteLength % 2 == 0)
