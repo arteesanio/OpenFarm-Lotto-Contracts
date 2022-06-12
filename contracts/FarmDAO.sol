@@ -181,7 +181,7 @@ contract TheOpenFarmDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    address tokenLotto = 0x12b1a00d967c9Ab27ef27e7728923067EF3a7Fc2;
+    address tokenLotto = 0xadf19b38D80bb3f59ACC3170476aFb4B1DE3F0b4;
     address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
 
     // Create a modifier which only allows a function to be
