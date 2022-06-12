@@ -284,8 +284,9 @@ contract TheOpenFarmDAO is Ownable {
         Proposal storage proposal = proposals[proposalIndex];
 
         require(proposal.amountVotes >= proposal.amount, "NOT_ENOUGH_VOTES");
-        require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.amountVotes, "NOT_ENOUGH_DAO_FUNDS");
-        require(IERC20(LottoERC20).balanceOf(tokenLotto) >= proposal.amountVotes, "NOT_ENOUGH_LOTTO_FUNDS");
+        require(IERC20(LottoERC20).balanceOf(tokenLotto) >= proposal.amount, "NOT_ENOUGH_LOTTO_FUNDS");
+        assert(IERC20(LottoERC20).transferFrom(tokenLotto, address(this), proposal.amount));
+        require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.amount, "NOT_ENOUGH_DAO_FUNDS");
 
         IOpenLotto(tokenLotto).newRound(proposalIndex, proposal.amount, proposal.amountVotes);
         proposal.executed = true;
