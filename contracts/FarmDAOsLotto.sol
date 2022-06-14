@@ -156,8 +156,8 @@ interface IOpenLotto {
     function newRound(uint256 proposalIndex, uint256 _amount) external;
 }
 interface IOpenDAO {
-    function getVotes(uint256 _proposalIndex, address _voter) external view returns (uint256);
-    function getVote(uint256 _proposalIndex, address _voter) external view returns (uint256);
+    function getVoterAmountOfVotes(uint256 _proposalIndex, address _voter) external view returns (uint256);
+    function getVoterVoteIndex(uint256 _proposalIndex, address _voter) external view returns (uint256);
 }
 
 /**
@@ -223,8 +223,8 @@ contract TheOpenFarmDAOsLotto is Ownable {
         mapping(uint256 => uint256) redeemed;
     }
 
-    uint256 public MIN_AMOUNT = 10**18;
-    uint256 public MIN_VOTES = 1000;
+    // uint256 public MIN_AMOUNT = 10**18;
+    // uint256 public MIN_VOTES = 1000;
 
     mapping(uint256 => uint256[6]) public redeems;
     mapping(uint256 => uint256) public randomRequests;
@@ -239,8 +239,8 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
     function getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
         require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
-        uint256 voteIndex = IOpenDAO(owner()).getVote(_proposalIndex, _voter);
-        uint256 voteDistance = IOpenDAO(owner()).getVotes(_proposalIndex, _voter);
+        uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
+        uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
         require(_votePos >= voteIndex && _votePos <= voteIndex + voteDistance, "NOT_VOTE_OWNER");
         require(gameRounds[_proposalIndex].redeemed[_votePos] == 0, "RESULT_ALREADY_EXISTS");
         uint256 oddRoundVoteLength = gameRounds[_proposalIndex].votes;
@@ -315,16 +315,20 @@ contract TheOpenFarmDAOsLotto is Ownable {
         gameRounds[_proposalIndex].randomResultBlock = block.number;
         randomRequests[_proposalIndex] = IRandomResolver(RANDOM_RESOLVER).s_randomWords0();
         gameRounds[_proposalIndex].randomResult = randomRequests[_proposalIndex];
+        assert(IERC20(LottoERC20).transferFrom(address(this), owner(), gameRounds[_proposalIndex].lockedFunds * 3 / 10));
         bool result = true;
         // IRandomResolver(RANDOM_RESOLVER).resetLastRandom(_proposalIndex);
         return result;
+    }
+    function emergencyWithdraw() external onlyOwner {
+        assert(IERC20(LottoERC20).transferFrom(address(this), owner(), IERC20(LottoERC20).balanceOf(address(this))));
     }
 
     function newRound(uint256 _proposalIndex, uint256 _amount, uint256 _votes) external onlyOwner {
         require(!hasRequestedRandom[_proposalIndex], "RANDOM_REQUEST_EXISTS");
         require(gameRounds[_proposalIndex].lockedFunds == 0, "PROPOSAL_EXIST");
-        require(_amount > MIN_AMOUNT, "MINIMUN_ROUND_AMOUNT");
-        require(_votes > MIN_VOTES, "MINIMUN_VOTES");
+        // require(_amount > MIN_AMOUNT, "MINIMUN_ROUND_AMOUNT");
+        // require(_votes > MIN_VOTES, "MINIMUN_VOTES");
 
         gameRounds[_proposalIndex].lockedFunds = _amount;
         assert(IERC20(LottoERC20).transferFrom(owner(), address(this), _amount));

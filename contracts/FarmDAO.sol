@@ -15,6 +15,7 @@ interface IERC20 {
      * Emits a {Transfer} event.
      */
     function transfer(address recipient, uint amount) external returns (bool);
+    function approve(address spender, uint amount) external returns (bool);
 
     /**
      * @dev Moves `amount` tokens from `sender` to `recipient` using the
@@ -160,20 +161,23 @@ interface IOpenLotto {
 
 contract TheOpenFarmDAO is Ownable {
 
-    uint256 public VOTE_COST = 1**15;
+    uint256 public VOTE_COST = 10**14;
 
     // We will write contract code here
     // Create a struct named Proposal containing all relevant information
     struct Proposal {
-        uint256 amount;
-        uint256 amountVotes;
+        uint256 amountOfVotes;
+        uint256 amountOfVotesRequired;
+        uint256 amountOfTokens;
+        uint256 amountOfTokensRequired;
         // deadline - the UNIX timestamp until which this proposal is active. Proposal can be executed after the deadline has been exceeded.
         uint256 deadline;
         // executed - whether or not this proposal has been executed yet. Cannot be executed before the deadline has been exceeded.
         bool executed;
         // voters - a mapping of CryptoDevsNFT tokenIDs to booleans indicating whether that NFT has already been used to cast a vote or not
-        mapping(address => uint256) voters;
-        mapping(address => uint256) votersVotes;
+        mapping(address => uint256) votersIndex;
+        mapping(address => uint256) votersAmountOfVotes;
+        mapping(address => uint256) votersAmountOfTokens;
     }
 
     // Create a mapping of ID to Proposal
@@ -181,7 +185,7 @@ contract TheOpenFarmDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    address tokenLotto = 0xadf19b38D80bb3f59ACC3170476aFb4B1DE3F0b4;
+    address theLotto = 0x38FF094074a6b3E7b3092561067049087E5811b6;
     address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
 
     // Create a modifier which only allows a function to be
@@ -217,15 +221,20 @@ contract TheOpenFarmDAO is Ownable {
     }
 
     /// @dev createProposal allows a DAO Token holder to create a new proposal in the DAO
-    /// @param _amount - the tokenID of the NFT to be purchased from FakeNFTMarketplace if this proposal passes
+    /// @param _amountOfVotesRequired - the tokenID of the NFT to be purchased from FakeNFTMarketplace if this proposal passes
     /// @return Returns the proposal index for the newly created proposal
-    function createProposal(uint256 _amount)
+    function createProposal(uint256 _amountOfVotesRequired)
         external
         DAOHolderOnly
         returns (uint256)
     {
         Proposal storage proposal = proposals[numProposals];
-        proposal.amount = _amount;
+        if (numProposals != 0) {
+            Proposal storage lastProposal = proposals[numProposals - 1];
+            require(block.timestamp > lastProposal.deadline, "ACTIVE_PROPOSAL_EXISTS");
+        }
+        proposal.amountOfVotesRequired = _amountOfVotesRequired;
+        proposal.amountOfTokensRequired = VOTE_COST * _amountOfVotesRequired;
         // Set the proposal's voting deadline to be (current time + 5 minutes)
         proposal.deadline = block.timestamp + 5 minutes;
 
@@ -234,29 +243,10 @@ contract TheOpenFarmDAO is Ownable {
         return numProposals - 1;
     }
 
-    function getVotes(uint256 _proposalIndex, address _voter)
-        external
-        view
-        returns (uint256)
-    {
-        Proposal storage proposal = proposals[_proposalIndex];
-        require(proposal.votersVotes[_voter] != 0, "NOT_FOUND");
-        return proposal.votersVotes[_voter];
-    }
-    function getVote(uint256 _proposalIndex, address _voter)
-        external
-        view
-        returns (uint256)
-    {
-        Proposal storage proposal = proposals[_proposalIndex];
-        require(proposal.voters[_voter] != 0, "NOT_FOUND");
-        return proposal.voters[_voter];
-    }
-
     /// @dev voteOnProposal allows a DAO Token holder to cast their vote on an active proposal
     /// @param _proposalIndex - the index of the proposal to vote on in the proposals array
-    /// @param _amount - the type of vote they want to cast
-    function voteOnProposal(uint256 _proposalIndex, uint256 _amount)
+    /// @param _amountOfVotes - the type of vote they want to cast
+    function voteOnProposal(uint256 _proposalIndex, uint256 _amountOfVotes)
         external
         DAOHolderOnly
         activeProposalOnly(_proposalIndex)
@@ -264,32 +254,48 @@ contract TheOpenFarmDAO is Ownable {
         Proposal storage proposal = proposals[_proposalIndex];
 
         uint256 memberBalance = IERC20(LottoERC20).balanceOf(msg.sender);
-        uint256 amount = VOTE_COST * _amount;
-        require(memberBalance >= amount, "NOT_ENOUGH_BALANCE");
-        require(proposal.votersVotes[msg.sender] == 0, "ALREADY_VOTED");
-        require(_amount > 0, "INVALID_VOTE_COUNT");
-        proposal.votersVotes[msg.sender] = _amount;
-        proposal.voters[msg.sender] = proposal.amountVotes;
-        proposal.amountVotes += _amount;
-        assert(IERC20(LottoERC20).transferFrom(msg.sender, address(this), amount));
+        uint256 amountOfTokens = VOTE_COST * _amountOfVotes;
+        require(memberBalance >= amountOfTokens, "NOT_ENOUGH_BALANCE");
+        require(proposal.votersAmountOfTokens[msg.sender] == 0, "ALREADY_VOTED");
+        require(_amountOfVotes > 0, "INVALID_VOTE_COUNT");
+        proposal.votersIndex[msg.sender] = proposal.amountOfVotes;
+        proposal.votersAmountOfVotes[msg.sender] = _amountOfVotes;
+        proposal.votersAmountOfTokens[msg.sender] = amountOfTokens;
+        proposal.amountOfTokens += amountOfTokens;
+        proposal.amountOfVotes += _amountOfVotes;
+        assert(IERC20(LottoERC20).transferFrom(msg.sender, address(this), amountOfTokens));
     }
 
     /// @dev executeProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
-    /// @param proposalIndex - the index of the proposal to execute in the proposals array
-    function executeProposal(uint256 proposalIndex)
+    /// @param _proposalIndex - the index of the proposal to execute in the proposals array
+    function executeProposal(uint256 _proposalIndex)
         external
         DAOHolderOnly
-        inactiveProposalOnly(proposalIndex)
+        inactiveProposalOnly(_proposalIndex)
     {
-        Proposal storage proposal = proposals[proposalIndex];
+        Proposal storage proposal = proposals[_proposalIndex];
 
-        require(proposal.amountVotes >= proposal.amount, "NOT_ENOUGH_VOTES");
-        require(IERC20(LottoERC20).balanceOf(tokenLotto) >= proposal.amount, "NOT_ENOUGH_LOTTO_FUNDS");
-        assert(IERC20(LottoERC20).transferFrom(tokenLotto, address(this), proposal.amount));
-        require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.amount, "NOT_ENOUGH_DAO_FUNDS");
+        require(proposal.amountOfTokens >= proposal.amountOfTokensRequired, "NOT_ENOUGH_TOKENS");
+        require(proposal.amountOfVotes >= proposal.amountOfVotesRequired, "NOT_ENOUGH_VOTES");
+        require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.amountOfTokens, "NOT_ENOUGH_DAO_FUNDS");
 
-        IOpenLotto(tokenLotto).newRound(proposalIndex, proposal.amount, proposal.amountVotes);
+        assert(IERC20(LottoERC20).approve(theLotto, proposal.amountOfTokens));
+        IOpenLotto(theLotto).newRound(_proposalIndex, proposal.amountOfTokens, proposal.amountOfVotesRequired);
         proposal.executed = true;
+    }
+
+
+    /// @dev withdrawFromProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
+    /// @param _proposalIndex - the index of the proposal to execute in the proposals array
+    function withdrawFromProposal(uint256 _proposalIndex)
+        external
+        DAOHolderOnly
+        inactiveProposalOnly(_proposalIndex)
+    {
+        Proposal storage proposal = proposals[_proposalIndex];
+        require(proposal.executed == true, "NOT_EXECUTED");
+        require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.votersAmountOfTokens[msg.sender], "NOT_ENOUGH_DAO_FUNDS");
+        assert(IERC20(LottoERC20).transferFrom(address(this), msg.sender, proposal.votersAmountOfTokens[msg.sender]));
     }
 
     /// @dev withdrawEther allows the contract owner (deployer) to withdraw the ETH from the contract
@@ -300,6 +306,42 @@ contract TheOpenFarmDAO is Ownable {
     /// @dev withdrawBalance allows the contract owner (deployer) to withdraw IERC20(LottoERC20).balanceOf from the contract
     function withdrawBalance() external onlyOwner {
         assert(IERC20(LottoERC20).transferFrom (address(this), owner(), IERC20(LottoERC20).balanceOf(address(this)) ) );
+    }
+
+    function getVoterAmountOfTokens(uint256 _proposalIndex, address _voter)
+        external
+        view
+        returns (uint256)
+    {
+        Proposal storage proposal = proposals[_proposalIndex];
+        require(proposal.votersAmountOfTokens[_voter] != 0, "NOT_FOUND");
+        return proposal.votersAmountOfTokens[_voter];
+    }
+    function getVoterAmountOfVotes(uint256 _proposalIndex, address _voter)
+        external
+        view
+        returns (uint256)
+    {
+        Proposal storage proposal = proposals[_proposalIndex];
+        require(proposal.votersAmountOfVotes[_voter] != 0, "NOT_FOUND");
+        return proposal.votersAmountOfVotes[_voter];
+    }
+    function getVoterVoteIndex(uint256 _proposalIndex, address _voter)
+        external
+        view
+        returns (uint256)
+    {
+        Proposal storage proposal = proposals[_proposalIndex];
+        require(proposal.votersIndex[_voter] != 0, "NOT_FOUND");
+        return proposal.votersIndex[_voter];
+    }
+    function amountOfVotesRequired(uint256 _proposalIndex)
+        external
+        view
+        returns (uint256)
+    {
+        Proposal storage proposal = proposals[_proposalIndex];
+        return proposal.amountOfVotesRequired;
     }
 
     // The following two functions allow the contract to accept ETH deposits
