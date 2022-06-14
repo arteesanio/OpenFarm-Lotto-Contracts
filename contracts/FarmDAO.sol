@@ -185,7 +185,7 @@ contract TheOpenFarmDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    address theLotto = 0x38FF094074a6b3E7b3092561067049087E5811b6;
+    address theLotto = 0x31A6DCA98B864333B7Fa8AaD8982b29E3af1c02F;
     address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
 
     // Create a modifier which only allows a function to be
@@ -235,8 +235,8 @@ contract TheOpenFarmDAO is Ownable {
         }
         proposal.amountOfVotesRequired = _amountOfVotesRequired;
         proposal.amountOfTokensRequired = VOTE_COST * _amountOfVotesRequired;
-        // Set the proposal's voting deadline to be (current time + 5 minutes)
-        proposal.deadline = block.timestamp + 5 minutes;
+        // Set the proposal's voting deadline to be (current time + 1 minutes)
+        proposal.deadline = block.timestamp + 1 minutes;
 
         numProposals++;
 
@@ -284,16 +284,33 @@ contract TheOpenFarmDAO is Ownable {
         proposal.executed = true;
     }
 
-
-    /// @dev withdrawFromProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
+    /// @dev executeTest allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
     /// @param _proposalIndex - the index of the proposal to execute in the proposals array
-    function withdrawFromProposal(uint256 _proposalIndex)
+    function executeTest(uint256 _proposalIndex)
         external
         DAOHolderOnly
         inactiveProposalOnly(_proposalIndex)
     {
         Proposal storage proposal = proposals[_proposalIndex];
-        require(proposal.executed == true, "NOT_EXECUTED");
+
+        require(proposal.amountOfTokens >= proposal.amountOfTokensRequired, "NOT_ENOUGH_TOKENS");
+        require(proposal.amountOfVotes >= proposal.amountOfVotesRequired, "NOT_ENOUGH_VOTES");
+        require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.amountOfTokens, "NOT_ENOUGH_DAO_FUNDS");
+
+        assert(IERC20(LottoERC20).approve(theLotto, proposal.amountOfTokens));
+        // IOpenLotto(theLotto).newRound(_proposalIndex, proposal.amountOfTokens, proposal.amountOfVotesRequired);
+        // proposal.executed = true;
+    }
+
+
+    /// @dev withdrawFromProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
+    /// @param _proposalIndex - the index of the proposal to execute in the proposals array
+    function withdrawFromFailedProposal(uint256 _proposalIndex)
+        external
+        DAOHolderOnly
+        inactiveProposalOnly(_proposalIndex)
+    {
+        Proposal storage proposal = proposals[_proposalIndex];
         require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.votersAmountOfTokens[msg.sender], "NOT_ENOUGH_DAO_FUNDS");
         assert(IERC20(LottoERC20).transferFrom(address(this), msg.sender, proposal.votersAmountOfTokens[msg.sender]));
     }
