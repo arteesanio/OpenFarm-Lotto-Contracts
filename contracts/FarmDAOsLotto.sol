@@ -334,12 +334,12 @@ contract TheOpenFarmDAOsLotto is Ownable {
         assert(IERC20(LottoERC20).transferFrom(owner(), address(this), _amount));
         gameRounds[_proposalIndex].votes = _votes;
 
-        requestResolveRound(_proposalIndex);
+        // requestResolveRound(_proposalIndex);
     }
 
-    function requestResolveRound(uint256 _proposalIndex) internal {
+    function requestResolveRound(uint256 _proposalIndex) external {
         require(gameRounds[_proposalIndex].lockedFunds > 0, "PROPOSAL_DOESNT_EXIST");
-        require(!hasRequestedRandom[_proposalIndex], "RANDOM_REQUEST_EXISTS");
+        require(hasRequestedRandom[_proposalIndex] == false, "RANDOM_REQUEST_EXISTS");
 
         hasRequestedRandom[_proposalIndex] = true;
 

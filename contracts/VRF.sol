@@ -294,7 +294,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
   uint256[] public s_randomWords;
   uint256 public s_requestId;
   address s_owner;
-  address requester;
+  address public requester;
 
   constructor() VRFConsumerBaseV2(vrfCoordinator) {
     COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);

@@ -280,7 +280,7 @@ contract TheOpenFarmDAO is Ownable {
         require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.amountOfTokens, "NOT_ENOUGH_DAO_FUNDS");
 
         assert(IERC20(LottoERC20).approve(theLotto, proposal.amountOfTokens));
-        IOpenLotto(theLotto).newRound(_proposalIndex, proposal.amountOfTokens, proposal.amountOfVotesRequired);
+        IOpenLotto(theLotto).newRound(_proposalIndex, proposal.amountOfTokens, proposal.amountOfVotes);
         proposal.executed = true;
     }
 
