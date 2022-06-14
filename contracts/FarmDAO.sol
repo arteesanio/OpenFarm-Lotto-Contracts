@@ -185,7 +185,7 @@ contract TheOpenFarmDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    address theLotto = 0x6F30a31d61E348Bd53E7cCf00F9DDFf4296beC95;
+    address theLotto = 0xd6292c00cA311877b12492f694FC9Cf3DCAFca8A;
     address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
 
     // Create a modifier which only allows a function to be
@@ -258,7 +258,7 @@ contract TheOpenFarmDAO is Ownable {
         require(memberBalance >= amountOfTokens, "NOT_ENOUGH_BALANCE");
         require(proposal.votersAmountOfTokens[msg.sender] == 0, "ALREADY_VOTED");
         require(_amountOfVotes > 0, "INVALID_VOTE_COUNT");
-        proposal.votersIndex[msg.sender] = proposal.amountOfVotes;
+        proposal.votersIndex[msg.sender] = proposal.amountOfVotes + 1;
         proposal.votersAmountOfVotes[msg.sender] = _amountOfVotes;
         proposal.votersAmountOfTokens[msg.sender] = amountOfTokens;
         proposal.amountOfTokens += amountOfTokens;

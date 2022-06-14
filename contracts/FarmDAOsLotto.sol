@@ -5,6 +5,8 @@ pragma solidity ^0.8.4;
  * @dev Interface of the ERC20 standard as defined in the EIP.
  */
 interface IERC20 {
+    function approve(address spender, uint amount) external returns (bool);
+
     function balanceOf(address owner) external view returns (uint256);
     /**
      * @dev Moves `amount` tokens from the caller's account to `recipient`.
@@ -260,6 +262,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
             {
                 uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
                 redeems[_proposalIndex][0] = 1;
+                assert(IERC20(LottoERC20).approve(_voter, winAmount));
                 assert(IERC20(LottoERC20).transferFrom(address(this), _voter, winAmount));
             }
         } else if (percentIndex < 2)
@@ -268,6 +271,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
             {
                 uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 100;
                 redeems[_proposalIndex][1]++;
+                assert(IERC20(LottoERC20).approve(_voter, winAmount));
                 assert(IERC20(LottoERC20).transferFrom(address(this), _voter, winAmount));
             }
         } else if (percentIndex < 10)
@@ -276,6 +280,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
             {
                 uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 100;
                 redeems[_proposalIndex][2]++;
+                assert(IERC20(LottoERC20).approve(_voter, winAmount));
                 assert(IERC20(LottoERC20).transferFrom(address(this), _voter, winAmount));
             }
         } else if (percentIndex < 20)
@@ -284,6 +289,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
             {
                 uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 1000;
                 redeems[_proposalIndex][3]++;
+                assert(IERC20(LottoERC20).approve(_voter, winAmount));
                 assert(IERC20(LottoERC20).transferFrom(address(this), _voter, winAmount));
             }
         } else if (percentIndex < 50)
@@ -292,6 +298,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
             {
                 uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 1000;
                 redeems[_proposalIndex][4]++;
+                assert(IERC20(LottoERC20).approve(_voter, winAmount));
                 assert(IERC20(LottoERC20).transferFrom(address(this), _voter, winAmount));
             }
         } else if (percentIndex < 100)
@@ -300,6 +307,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
             {
                 uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 1000;
                 redeems[_proposalIndex][5]++;
+                assert(IERC20(LottoERC20).approve(_voter, winAmount));
                 assert(IERC20(LottoERC20).transferFrom(address(this), _voter, winAmount));
             }
         }
