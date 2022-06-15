@@ -185,7 +185,7 @@ contract TheOpenFarmDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    address theLotto = 0xd6292c00cA311877b12492f694FC9Cf3DCAFca8A;
+    address theLotto = 0x314f9f1EE2bA6B7bDD10760a41f5AC200B455E83;
     address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
 
     // Create a modifier which only allows a function to be
@@ -294,7 +294,8 @@ contract TheOpenFarmDAO is Ownable {
     {
         Proposal storage proposal = proposals[_proposalIndex];
         require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.votersAmountOfTokens[msg.sender], "NOT_ENOUGH_DAO_FUNDS");
-        assert(IERC20(LottoERC20).transferFrom(address(this), msg.sender, proposal.votersAmountOfTokens[msg.sender]));
+        // assert(IERC20(LottoERC20).approve(msg.sender, proposal.votersAmountOfTokens[msg.sender]));
+        assert(IERC20(LottoERC20).transfer(msg.sender, proposal.votersAmountOfTokens[msg.sender]));
     }
 
     /// @dev withdrawEther allows the contract owner (deployer) to withdraw the ETH from the contract
@@ -304,7 +305,7 @@ contract TheOpenFarmDAO is Ownable {
 
     /// @dev withdrawBalance allows the contract owner (deployer) to withdraw IERC20(LottoERC20).balanceOf from the contract
     function withdrawBalance() external onlyOwner {
-        assert(IERC20(LottoERC20).transferFrom (address(this), owner(), IERC20(LottoERC20).balanceOf(address(this)) ) );
+        assert(IERC20(LottoERC20).transfer(owner(), IERC20(LottoERC20).balanceOf(address(this)) ) );
     }
 
     function getVoterAmountOfTokens(uint256 _proposalIndex, address _voter)
@@ -313,7 +314,7 @@ contract TheOpenFarmDAO is Ownable {
         returns (uint256)
     {
         Proposal storage proposal = proposals[_proposalIndex];
-        require(proposal.votersAmountOfTokens[_voter] != 0, "NOT_FOUND");
+        require(proposal.votersAmountOfTokens[_voter] != 0, "VOTER_NOT_FOUND");
         return proposal.votersAmountOfTokens[_voter];
     }
     function getVoterAmountOfVotes(uint256 _proposalIndex, address _voter)
@@ -322,7 +323,7 @@ contract TheOpenFarmDAO is Ownable {
         returns (uint256)
     {
         Proposal storage proposal = proposals[_proposalIndex];
-        require(proposal.votersAmountOfVotes[_voter] != 0, "NOT_FOUND");
+        require(proposal.votersAmountOfVotes[_voter] != 0, "VOTER_NOT_FOUND");
         return proposal.votersAmountOfVotes[_voter];
     }
     function getVoterVoteIndex(uint256 _proposalIndex, address _voter)
@@ -331,7 +332,7 @@ contract TheOpenFarmDAO is Ownable {
         returns (uint256)
     {
         Proposal storage proposal = proposals[_proposalIndex];
-        require(proposal.votersIndex[_voter] != 0, "NOT_FOUND");
+        require(proposal.votersIndex[_voter] != 0, "VOTER_NOT_FOUND");
         return proposal.votersIndex[_voter];
     }
     function amountOfVotesRequired(uint256 _proposalIndex)
