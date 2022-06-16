@@ -254,11 +254,15 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         // uint256 winNumber = (randomRequests[_proposalIndex] * _votePos) % gameRounds[_proposalIndex].votes;
         // gameRounds[_proposalIndex].scratchedNumber[_votePos] = winNumber;
-        gameRounds[_proposalIndex].scratchedNumber[_votePos] = 999;
-        gameRounds[_proposalIndex].redeemedPercent[_votePos] = randomRequests[_proposalIndex] % gameRounds[_proposalIndex].votes;
+        gameRounds[_proposalIndex].scratchedNumber[_votePos] = randomRequests[_proposalIndex] % gameRounds[_proposalIndex].votes;
+        gameRounds[_proposalIndex].redeemedPercent[_votePos] = (
+            randomRequests[_proposalIndex]
+            % gameRounds[_proposalIndex].votes * _votePos
+            % gameRounds[_proposalIndex].votes
+        );
         
         // return winNumber;
-        return 999;
+        return gameRounds[_proposalIndex].scratchedNumber[_votePos];
     }
 
     function _getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
