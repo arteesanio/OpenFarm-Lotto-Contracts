@@ -260,6 +260,18 @@ contract TheOpenFarmDAOsLotto is Ownable {
             % gameRounds[_proposalIndex].votes * _votePos
             % gameRounds[_proposalIndex].votes
         );
+
+        uint256 mul_resut = gameRounds[_proposalIndex].redeemedPercent[_votePos] * 1000 / gameRounds[_proposalIndex].votes;
+
+        if (mul_resut <= 2)
+        {
+            if (redeemHistory[_proposalIndex][0] < 1)
+            {
+                // uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
+                redeemHistory[_proposalIndex][0] = 1;
+            }
+
+        }
         
         // return winNumber;
         return gameRounds[_proposalIndex].scratchedNumber[_votePos];
