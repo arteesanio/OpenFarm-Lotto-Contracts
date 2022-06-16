@@ -244,7 +244,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
     function getVoteScratchedNumber(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
         return gameRounds[_proposalIndex].scratchedNumber[_votePos];
     }
-    
+
     function getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
         require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
         uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
@@ -252,10 +252,13 @@ contract TheOpenFarmDAOsLotto is Ownable {
         require(_votePos >= voteIndex && _votePos <= voteIndex + voteDistance, "NOT_VOTE_OWNER");
         require(gameRounds[_proposalIndex].redeemedPercent[_votePos] == 0, "RESULT_ALREADY_EXISTS");
 
-        uint256 winNumber = (randomRequests[_proposalIndex] * _votePos) % gameRounds[_proposalIndex].votes;
-        gameRounds[_proposalIndex].scratchedNumber[_votePos] = winNumber;
+        // uint256 winNumber = (randomRequests[_proposalIndex] * _votePos) % gameRounds[_proposalIndex].votes;
+        // gameRounds[_proposalIndex].scratchedNumber[_votePos] = winNumber;
+        gameRounds[_proposalIndex].scratchedNumber[_votePos] = 999;
+        gameRounds[_proposalIndex].redeemedPercent[_votePos] = randomRequests[_proposalIndex] % gameRounds[_proposalIndex].votes;
         
-        return winNumber;
+        // return winNumber;
+        return 999;
     }
 
     function _getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {

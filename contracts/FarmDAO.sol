@@ -161,7 +161,7 @@ interface IOpenLotto {
 
 contract TheOpenFarmDAO is Ownable {
 
-    uint256 public VOTE_COST = 10**14;
+    uint256 public VOTE_COST = 10**13;
 
     // We will write contract code here
     // Create a struct named Proposal containing all relevant information
@@ -185,7 +185,7 @@ contract TheOpenFarmDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    address theLotto = 0x481aA4549fc3aD3B8a508b9AF70D3b8100C9cf71;
+    address theLotto = 0x51Bf0cd9f12905B0C7faaB04682E66CA510250A6;
     address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
 
     // Create a modifier which only allows a function to be
