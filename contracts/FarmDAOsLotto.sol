@@ -220,12 +220,12 @@ contract TheOpenFarmDAOsLotto is Ownable {
         uint256 lockedFunds;
         uint256 amountRaised;
         uint256 votes;
-        uint256 wonAmount;
 
         bytes32 randomRequestId;
         uint8 lastResult;
         mapping(uint256 => uint256) redeemedPercent;
         mapping(uint256 => uint256) scratchedNumber;
+        mapping(uint256 => uint256) wonAmount;
     }
 
     // uint256 public MIN_AMOUNT = 10**18;
@@ -255,8 +255,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
         // uint256 winNumber = (randomRequests[_proposalIndex] * _votePos) % gameRounds[_proposalIndex].votes;
         // gameRounds[_proposalIndex].scratchedNumber[_votePos] = winNumber;
         gameRounds[_proposalIndex].redeemedPercent[_votePos] = (
-            randomRequests[_proposalIndex]
-            % gameRounds[_proposalIndex].votes * _votePos
+            ((randomRequests[_proposalIndex] % gameRounds[_proposalIndex].votes) * _votePos)
             % gameRounds[_proposalIndex].votes
         );
 
@@ -268,8 +267,9 @@ contract TheOpenFarmDAOsLotto is Ownable {
             {
                 uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
                 redeemHistory[_proposalIndex][0] = 1;
-                IERC20(LottoERC20).approve(_voter, winAmount);
-                IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
+                gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
+                // IERC20(LottoERC20).approve(_voter, winAmount);
+                // IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
             }
 
         } else if (mul_resut <= 183) {
@@ -277,8 +277,9 @@ contract TheOpenFarmDAOsLotto is Ownable {
             {
                 uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 1000;
                 redeemHistory[_proposalIndex][5]++;
-                IERC20(LottoERC20).approve(_voter, winAmount);
-                IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
+                gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
+                // IERC20(LottoERC20).approve(_voter, winAmount);
+                // IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
             }
 
         }
