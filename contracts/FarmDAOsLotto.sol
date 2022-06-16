@@ -254,7 +254,6 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         // uint256 winNumber = (randomRequests[_proposalIndex] * _votePos) % gameRounds[_proposalIndex].votes;
         // gameRounds[_proposalIndex].scratchedNumber[_votePos] = winNumber;
-        gameRounds[_proposalIndex].scratchedNumber[_votePos] = randomRequests[_proposalIndex] % gameRounds[_proposalIndex].votes;
         gameRounds[_proposalIndex].redeemedPercent[_votePos] = (
             randomRequests[_proposalIndex]
             % gameRounds[_proposalIndex].votes * _votePos
@@ -262,6 +261,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
         );
 
         uint256 mul_resut = gameRounds[_proposalIndex].redeemedPercent[_votePos] * 1000 / gameRounds[_proposalIndex].votes;
+        gameRounds[_proposalIndex].scratchedNumber[_votePos] = mul_resut;
 
         if (mul_resut <= 2)
         {
