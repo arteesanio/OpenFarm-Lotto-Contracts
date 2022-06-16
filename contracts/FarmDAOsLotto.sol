@@ -184,12 +184,12 @@ interface IToken {
 
 /*
 // $1000 tickets
-// 1 - 200 = 200  - 0.001 - 0.2 %
-// 2 - 50 = 100   - 0.002 - 0.05 %
-// 10 - 10 = 100  - 0.01 - 0.01 %
-// 20 - 5 = 100   - 0.02 - 0.005 %
-// 50 - 2 = 100   - 0.05 - 0.002 %
-// 100 - 1 = 100  - 0.1 - 0.001 %
+// 1 - 200 = 200  - 0.001 - 0.2 %       
+// 2 - 50 = 100   - 0.002 - 0.05 %      
+// 10 - 10 = 100  - 0.01 - 0.01 %       
+// 20 - 5 = 100   - 0.02 - 0.005 %      
+// 50 - 2 = 100   - 0.05 - 0.002 %      
+// 100 - 1 = 100  - 0.1 - 0.001 %       
 // 183 user = total = $700
 */
 
@@ -263,18 +263,28 @@ contract TheOpenFarmDAOsLotto is Ownable {
         uint256 mul_resut = gameRounds[_proposalIndex].redeemedPercent[_votePos] * 1000 / gameRounds[_proposalIndex].votes;
         gameRounds[_proposalIndex].scratchedNumber[_votePos] = mul_resut;
 
-        if (mul_resut <= 2)
-        {
+        if (mul_resut <= 2) {
             if (redeemHistory[_proposalIndex][0] < 1)
             {
-                // uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
+                uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
                 redeemHistory[_proposalIndex][0] = 1;
+                IERC20(LottoERC20).approve(_voter, winAmount);
+                IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
+            }
+
+        } else if (mul_resut <= 183) {
+            if (redeemHistory[_proposalIndex][5] < 100)
+            {
+                uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 1000;
+                redeemHistory[_proposalIndex][5]++;
+                IERC20(LottoERC20).approve(_voter, winAmount);
+                IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
             }
 
         }
         
         // return winNumber;
-        return gameRounds[_proposalIndex].scratchedNumber[_votePos];
+        return mul_resut;
     }
 
     function _getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
