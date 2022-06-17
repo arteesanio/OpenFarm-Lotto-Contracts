@@ -247,6 +247,28 @@ contract TheOpenFarmDAOsLotto is Ownable {
     function getWonAmount(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
         return gameRounds[_proposalIndex].wonAmount[_votePos];
     }
+    function getWonAmount(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
+        return gameRounds[_proposalIndex].wonAmount[_votePos];
+    }
+    function withdrawAmount(uint256 _proposalIndex, uint256 _votePos, address _voter) external view returns (uint256) {
+        uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
+        uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
+        require(_votePos >= voteIndex && _votePos <= voteIndex + voteDistance, "NOT_VOTE_OWNER");
+        uint256 winAmount = gameRounds[_proposalIndex].wonAmount[_votePos];
+
+        require(winAmount > 1, "Already Redeemed");
+
+        assert(IERC20(LottoERC20).transferFrom(owner(), _voter, gameRounds[_proposalIndex].wonAmount[_votePos]);
+
+        // assert(IERC20(LottoERC20).approve(_voter, winAmount));
+        // assert(IERC20(LottoERC20).transfer(_voter, winAmount));
+
+        // IERC20(LottoERC20).approve(_voter, winAmount);
+        // IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
+
+        gameRounds[_proposalIndex].wonAmount[_votePos] = 1;
+        return winAmount;
+    }
 
     function getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
         require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
@@ -264,11 +286,11 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         uint256 mul_resut = gameRounds[_proposalIndex].redeemedPercent[_votePos] * 1000 / gameRounds[_proposalIndex].votes;
         gameRounds[_proposalIndex].scratchedNumber[_votePos] = mul_resut;
-
+        uint256 winAmount = 0;
         if (mul_resut <= 2) {
             if (redeemHistory[_proposalIndex][0] < 1)
             {
-                uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
+                winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
                 redeemHistory[_proposalIndex][0] = 1;
                 gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
                 // IERC20(LottoERC20).approve(_voter, winAmount);
@@ -278,7 +300,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
         } else if (mul_resut <= 183) {
             if (redeemHistory[_proposalIndex][5] < 100)
             {
-                uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 1000;
+                winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 1000;
                 redeemHistory[_proposalIndex][5]++;
                 gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
                 // IERC20(LottoERC20).approve(_voter, winAmount);
@@ -396,7 +418,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
         gameRounds[_proposalIndex].amountRaised = _amount;
         gameRounds[_proposalIndex].lockedFunds = gameRounds[_proposalIndex].amountRaised * 7 / 10;
 
-        assert(IERC20(LottoERC20).transferFrom(owner(), address(this), gameRounds[_proposalIndex].lockedFunds));
+        // assert(IERC20(LottoERC20).transferFrom(owner(), address(this), gameRounds[_proposalIndex].lockedFunds));
         gameRounds[_proposalIndex].votes = _votes;
 
         // requestResolveRound(_proposalIndex);

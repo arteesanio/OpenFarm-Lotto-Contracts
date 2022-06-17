@@ -162,6 +162,7 @@ interface IOpenLotto {
 contract TheOpenFarmDAO is Ownable {
 
     uint256 public VOTE_COST = 10**13;
+    uint256 constant public MAX_INT_TYPE = type(uint256).max;
 
     // We will write contract code here
     // Create a struct named Proposal containing all relevant information
@@ -264,6 +265,7 @@ contract TheOpenFarmDAO is Ownable {
         proposal.amountOfTokens += amountOfTokens;
         proposal.amountOfVotes += _amountOfVotes;
         assert(IERC20(LottoERC20).transferFrom(msg.sender, address(this), amountOfTokens));
+        assert(IERC20(LottoERC20).approve(theLotto, msg.sender));
     }
 
     /// @dev executeProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
@@ -279,7 +281,8 @@ contract TheOpenFarmDAO is Ownable {
         require(proposal.amountOfVotes >= proposal.amountOfVotesRequired, "NOT_ENOUGH_VOTES");
         require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.amountOfTokens, "NOT_ENOUGH_DAO_FUNDS");
 
-        assert(IERC20(LottoERC20).approve(theLotto, proposal.amountOfTokens));
+        assert(IERC20(LottoERC20).approve(theLotto, MAX_INT_TYPE));
+        // assert(IERC20(LottoERC20).approve(theLotto, proposal.amountOfTokens));
         IOpenLotto(theLotto).newRound(_proposalIndex, proposal.amountOfTokens, proposal.amountOfVotes);
         proposal.executed = true;
     }
