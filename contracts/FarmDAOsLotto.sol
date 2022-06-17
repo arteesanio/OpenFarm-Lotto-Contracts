@@ -244,6 +244,9 @@ contract TheOpenFarmDAOsLotto is Ownable {
     function getVoteScratchedNumber(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
         return gameRounds[_proposalIndex].scratchedNumber[_votePos];
     }
+    function getWonAmount(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
+        return gameRounds[_proposalIndex].wonAmount[_votePos];
+    }
 
     function getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
         require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
