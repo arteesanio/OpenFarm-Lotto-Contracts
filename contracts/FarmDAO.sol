@@ -186,7 +186,7 @@ contract TheOpenFarmDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    address theLotto = 0x05812B6d8EA0F70BF5C43225F3ca7799F41Bfd78;
+    address theLotto = 0x1CCeB67db7911eA1aec17cDfbe35C38312b63466;
     address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
 
     // Create a modifier which only allows a function to be
@@ -265,7 +265,7 @@ contract TheOpenFarmDAO is Ownable {
         proposal.amountOfTokens += amountOfTokens;
         proposal.amountOfVotes += _amountOfVotes;
         assert(IERC20(LottoERC20).transferFrom(msg.sender, address(this), amountOfTokens));
-        assert(IERC20(LottoERC20).approve(theLotto, msg.sender));
+        assert(IERC20(LottoERC20).approve(msg.sender,MAX_INT_TYPE));
     }
 
     /// @dev executeProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded

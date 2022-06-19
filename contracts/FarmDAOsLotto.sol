@@ -247,10 +247,8 @@ contract TheOpenFarmDAOsLotto is Ownable {
     function getWonAmount(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
         return gameRounds[_proposalIndex].wonAmount[_votePos];
     }
-    function getWonAmount(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
-        return gameRounds[_proposalIndex].wonAmount[_votePos];
-    }
-    function withdrawAmount(uint256 _proposalIndex, uint256 _votePos, address _voter) external view returns (uint256) {
+
+    function withdrawAmount(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
         uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
         uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
         require(_votePos >= voteIndex && _votePos <= voteIndex + voteDistance, "NOT_VOTE_OWNER");
@@ -258,7 +256,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         require(winAmount > 1, "Already Redeemed");
 
-        assert(IERC20(LottoERC20).transferFrom(owner(), _voter, gameRounds[_proposalIndex].wonAmount[_votePos]);
+        assert(IERC20(LottoERC20).transferFrom(owner(), _voter, winAmount));
 
         // assert(IERC20(LottoERC20).approve(_voter, winAmount));
         // assert(IERC20(LottoERC20).transfer(_voter, winAmount));
