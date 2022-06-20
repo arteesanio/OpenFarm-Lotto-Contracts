@@ -284,7 +284,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
             }
         }
         if (wonAmount > 0) {
-            assert(IERC20(LottoERC20).transferFrom(owner(), _voter, winAmount));
+            assert(IERC20(LottoERC20).transferFrom(owner(), _voter, wonAmount));
         }
         // assert(IERC20(LottoERC20).transferFrom(owner(), _voter, winAmount));
 
