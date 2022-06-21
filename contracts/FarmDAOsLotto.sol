@@ -322,20 +322,35 @@ contract TheOpenFarmDAOsLotto is Ownable {
                 winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
                 redeemHistory[_proposalIndex][0] = 1;
                 gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
-                // IERC20(LottoERC20).approve(_voter, winAmount);
-                // IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
             }
-
+        } else if (mul_resut <= 13) {
+            if (redeemHistory[_proposalIndex][2] < 10)
+            {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 100;
+                redeemHistory[_proposalIndex][2]++;
+                gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
+            }
+        } else if (mul_resut <= 33) {
+            if (redeemHistory[_proposalIndex][3] < 20)
+            {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 1000;
+                redeemHistory[_proposalIndex][3]++;
+                gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
+            }
+        } else if (mul_resut <= 83) {
+            if (redeemHistory[_proposalIndex][4] < 50)
+            {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 1000;
+                redeemHistory[_proposalIndex][4]++;
+                gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
+            }
         } else if (mul_resut <= 183) {
             if (redeemHistory[_proposalIndex][5] < 100)
             {
                 winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 1000;
                 redeemHistory[_proposalIndex][5]++;
                 gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
-                // IERC20(LottoERC20).approve(_voter, winAmount);
-                // IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
             }
-
         }
         
         // return winNumber;
