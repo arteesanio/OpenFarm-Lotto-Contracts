@@ -276,8 +276,10 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         uint256 wonAmount = 0;
         for (uint256 i = 0; i < voteDistance; i++) {
+            uint256 PREwinAmount = gameRounds[_proposalIndex].wonAmount[i + voteIndex];
+            require(PREwinAmount == 0, "ALREADY_REDEEMED");
+            getVoteResult(_proposalIndex, i + voteIndex, _voter);
             uint256 winAmount = gameRounds[_proposalIndex].wonAmount[i + voteIndex];
-            // require(winAmount > 1, "ALREADY_REDEEMED");
             if (winAmount > 1) {
                 wonAmount += winAmount;
                 gameRounds[_proposalIndex].wonAmount[i + voteIndex] = 1;
@@ -297,7 +299,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
         return wonAmount;
     }
 
-    function getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
+    function getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) public returns (uint256) {
         require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
         uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
         uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
