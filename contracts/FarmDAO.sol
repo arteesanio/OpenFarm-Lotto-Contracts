@@ -186,7 +186,7 @@ contract TheOpenFarmDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    address theLotto = 0x4588A2802E81dD1E784BE64f2B3F792B43a98A49;
+    address public theLotto = 0xF5CC52c98CFD9c7E42653A7Ccf67b285eF097b5E;
     address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
 
     // Create a modifier which only allows a function to be
@@ -214,12 +214,23 @@ contract TheOpenFarmDAO is Ownable {
             proposals[proposalIndex].deadline <= block.timestamp,
             "DEADLINE_NOT_EXCEEDED"
         );
+        _;
+    }
+    modifier unexecutedProposalOnly(uint256 proposalIndex) {
+        require(
+            proposals[proposalIndex].deadline <= block.timestamp,
+            "DEADLINE_NOT_EXCEEDED"
+        );
         require(
             proposals[proposalIndex].executed == false,
             "PROPOSAL_ALREADY_EXECUTED"
         );
         _;
     }
+
+      function setLotto(address _lotto) external onlyOwner {
+        theLotto = _lotto;
+      }
 
     /// @dev createProposal allows a DAO Token holder to create a new proposal in the DAO
     /// @param _amountOfVotesRequired - the tokenID of the NFT to be purchased from FakeNFTMarketplace if this proposal passes
@@ -293,12 +304,19 @@ contract TheOpenFarmDAO is Ownable {
     function withdrawFromFailedProposal(uint256 _proposalIndex)
         external
         DAOHolderOnly
-        inactiveProposalOnly(_proposalIndex)
+        unexecutedProposalOnly(_proposalIndex)
     {
         Proposal storage proposal = proposals[_proposalIndex];
-        require(IERC20(LottoERC20).balanceOf(address(this)) >= proposal.votersAmountOfTokens[msg.sender], "NOT_ENOUGH_DAO_FUNDS");
-        // assert(IERC20(LottoERC20).approve(msg.sender, proposal.votersAmountOfTokens[msg.sender]));
-        assert(IERC20(LottoERC20).transfer(msg.sender, proposal.votersAmountOfTokens[msg.sender]));
+
+        require(proposal.amountOfTokens < proposal.amountOfTokensRequired && proposal.amountOfVotes < proposal.amountOfVotesRequired, "VALID_PROPOSAL");
+
+        uint256 theAmount = proposal.votersAmountOfTokens[msg.sender];
+        require(theAmount != 1, "ALREADY_WITHDREW");
+        require(theAmount != 0, "DID_NOT_VOTED");
+        require(IERC20(LottoERC20).balanceOf(address(this)) >= theAmount, "NOT_ENOUGH_DAO_FUNDS");
+        // assert(IERC20(LottoERC20).approve(msg.sender, theAmount));
+        assert(IERC20(LottoERC20).transfer(msg.sender, theAmount));
+        proposal.votersAmountOfTokens[msg.sender] = 1;
     }
 
     /// @dev withdrawEther allows the contract owner (deployer) to withdraw the ETH from the contract
