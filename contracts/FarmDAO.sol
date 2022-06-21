@@ -186,7 +186,7 @@ contract TheOpenFarmDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    address theLotto = 0x456656202652fD601315037FAfE21C4Db39c158F;
+    address theLotto = 0x5d109451EdC8cB509acD589248BFdc06009eB64d;
     address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
 
     // Create a modifier which only allows a function to be
@@ -224,7 +224,7 @@ contract TheOpenFarmDAO is Ownable {
     /// @dev createProposal allows a DAO Token holder to create a new proposal in the DAO
     /// @param _amountOfVotesRequired - the tokenID of the NFT to be purchased from FakeNFTMarketplace if this proposal passes
     /// @return Returns the proposal index for the newly created proposal
-    function createProposal(uint256 _amountOfVotesRequired)
+    function createProposal(uint256 _amountOfVotesRequired, uint256 _minutes)
         external
         DAOHolderOnly
         returns (uint256)
@@ -237,7 +237,7 @@ contract TheOpenFarmDAO is Ownable {
         proposal.amountOfVotesRequired = _amountOfVotesRequired;
         proposal.amountOfTokensRequired = VOTE_COST * _amountOfVotesRequired;
         // Set the proposal's voting deadline to be (current time + 1 minutes)
-        proposal.deadline = block.timestamp + 1 minutes;
+        proposal.deadline = block.timestamp + (_minutes * 1 minutes);
 
         numProposals++;
 
