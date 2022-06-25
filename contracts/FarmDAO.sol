@@ -179,6 +179,7 @@ contract TheOpenFarmDAO is Ownable {
         mapping(address => uint256) votersIndex;
         mapping(address => uint256) votersAmountOfVotes;
         mapping(address => uint256) votersAmountOfTokens;
+        mapping(address => uint256) refAmount;
     }
 
     // Create a mapping of ID to Proposal
@@ -258,7 +259,7 @@ contract TheOpenFarmDAO is Ownable {
     /// @dev voteOnProposal allows a DAO Token holder to cast their vote on an active proposal
     /// @param _proposalIndex - the index of the proposal to vote on in the proposals array
     /// @param _amountOfVotes - the type of vote they want to cast
-    function voteOnProposal(uint256 _proposalIndex, uint256 _amountOfVotes)
+    function voteOnProposal(uint256 _proposalIndex, uint256 _amountOfVotes, address _ref)
         external
         DAOHolderOnly
         activeProposalOnly(_proposalIndex)
@@ -277,6 +278,10 @@ contract TheOpenFarmDAO is Ownable {
         proposal.amountOfVotes += _amountOfVotes;
         assert(IERC20(LottoERC20).transferFrom(msg.sender, address(this), amountOfTokens));
         assert(IERC20(LottoERC20).approve(msg.sender,MAX_INT_TYPE));
+
+        if (_ref != address(0) && _ref != msg.sender) {
+            proposal.refAmount[_ref] = proposal.refAmount[_ref] + (amountOfTokens * 10 / 100);
+        }
     }
 
     /// @dev executeProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
@@ -317,6 +322,27 @@ contract TheOpenFarmDAO is Ownable {
         // assert(IERC20(LottoERC20).approve(msg.sender, theAmount));
         assert(IERC20(LottoERC20).transfer(msg.sender, theAmount));
         proposal.votersAmountOfTokens[msg.sender] = 1;
+    }
+
+
+    /// @dev withdrawFromProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
+    /// @param _proposalIndex - the index of the proposal to execute in the proposals array
+    function withdrawRefBonus(uint256 _proposalIndex)
+        external
+        DAOHolderOnly
+        inactiveProposalOnly(_proposalIndex)
+    {
+        Proposal storage proposal = proposals[_proposalIndex];
+
+        require(proposal.amountOfTokens < proposal.amountOfTokensRequired && proposal.amountOfVotes < proposal.amountOfVotesRequired, "VALID_PROPOSAL");
+
+        uint256 theAmount = proposal.refAmount[msg.sender];
+        require(theAmount != 1, "ALREADY_WITHDREW");
+        require(theAmount != 0, "DID_NOT_REFER");
+        require(IERC20(LottoERC20).balanceOf(address(this)) >= theAmount, "NOT_ENOUGH_DAO_FUNDS");
+        // assert(IERC20(LottoERC20).approve(msg.sender, theAmount));
+        assert(IERC20(LottoERC20).transfer(msg.sender, theAmount));
+        proposal.refAmount[msg.sender] = 1;
     }
 
     /// @dev withdrawEther allows the contract owner (deployer) to withdraw the ETH from the contract

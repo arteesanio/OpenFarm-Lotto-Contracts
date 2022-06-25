@@ -226,6 +226,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
         mapping(uint256 => uint256) redeemedPercent;
         mapping(uint256 => uint256) scratchedNumber;
         mapping(uint256 => uint256) wonAmount;
+        uint256[83] winners;
     }
 
     // uint256 public MIN_AMOUNT = 10**18;
@@ -246,6 +247,9 @@ contract TheOpenFarmDAOsLotto is Ownable {
     }
     function getWonAmount(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
         return gameRounds[_proposalIndex].wonAmount[_votePos];
+    }
+    function getWinner(uint256 _proposalIndex, uint256 _winnerIndex) external view returns (uint256) {
+        return gameRounds[_proposalIndex].winners[_winnerIndex];
     }
 
     function withdrawAmount(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
@@ -450,10 +454,56 @@ contract TheOpenFarmDAOsLotto is Ownable {
         gameRounds[_proposalIndex].randomResultBlock = block.number;
         randomRequests[_proposalIndex] = IRandomResolver(RANDOM_RESOLVER).s_randomWords0();
         gameRounds[_proposalIndex].randomResult = IRandomResolver(RANDOM_RESOLVER).s_randomWords(0);
+
+        uint256[] memory results = expand(gameRounds[_proposalIndex].randomResult, 83);
+        uint256 winAmount;
+
+        for (uint256 i = 0; i < 83; i++) {
+
+            uint256 winnerIndex = (results[i] % gameRounds[_proposalIndex].votes) + 1;
+            gameRounds[_proposalIndex].winners[i] = winnerIndex;
+
+            // gameRounds[_proposalIndex].redeemedPercent[_votePos] = (
+            //     ((randomRequests[_proposalIndex] % gameRounds[_proposalIndex].votes) * _votePos)
+            //     % gameRounds[_proposalIndex].votes
+            // );
+
+            if (i == 0) {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
+            } else if(i < 3) {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 100;
+            } else if(i < 13) {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 100;
+            } else if(i < 33) {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 1000;
+            } else {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 1000;
+            }
+
+            gameRounds[_proposalIndex].wonAmount[winnerIndex] = winAmount;
+            gameRounds[_proposalIndex].scratchedNumber[winnerIndex] = i;
+
+            // uint256 PREwinAmount = gameRounds[_proposalIndex].wonAmount[winnerIndex];
+            // require(PREwinAmount == 0, "ALREADY_REDEEMED");
+            // getVoteResult(_proposalIndex, i + _voteIndex, _voter);
+            // uint256 winAmount = gameRounds[_proposalIndex].wonAmount[i + _voteIndex];
+            // if (winAmount > 1) {
+            //     wonAmount += winAmount;
+            //     gameRounds[_proposalIndex].wonAmount[i + _voteIndex] = 1;
+            // }
+        }
+
         // assert(IERC20(LottoERC20).transferFrom(address(this), owner(), gameRounds[_proposalIndex].amountRaised * 3 / 10));
         bool result = true;
         // IRandomResolver(RANDOM_RESOLVER).resetLastRandom(_proposalIndex);
         return result;
+    }
+    function expand(uint256 randomValue, uint256 n) public pure returns (uint256[] memory expandedValues) {
+        expandedValues = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) {
+            expandedValues[i] = uint256(keccak256(abi.encode(randomValue, i)));
+        }
+        return expandedValues;
     }
     function emergencyWithdraw() external onlyOwner {
         assert(IERC20(LottoERC20).transferFrom(address(this), owner(), IERC20(LottoERC20).balanceOf(address(this))));
