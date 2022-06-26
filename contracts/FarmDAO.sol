@@ -199,7 +199,7 @@ contract TheOpenFarmDAO is Ownable {
 
     // Create a modifier which only allows a function to be
     // called if the given proposal's deadline has not been exceeded yet
-    modifier activeProposalOnly(uint256 proposalIndex) {
+    modifier runningProposalOnly(uint256 proposalIndex) {
         require(
             proposals[proposalIndex].deadline > block.timestamp,
             "DEADLINE_EXCEEDED"
@@ -262,7 +262,7 @@ contract TheOpenFarmDAO is Ownable {
     function voteOnProposal(uint256 _proposalIndex, uint256 _amountOfVotes, address _ref)
         external
         DAOHolderOnly
-        activeProposalOnly(_proposalIndex)
+        runningProposalOnly(_proposalIndex)
     {
         Proposal storage proposal = proposals[_proposalIndex];
 
