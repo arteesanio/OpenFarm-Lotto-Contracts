@@ -273,42 +273,6 @@ contract TheOpenFarmDAOsLotto is Ownable {
         return winAmount;
     }
 
-    function _withdrawAll(uint256 _proposalIndex, uint256 _voteIndex, address _voter, uint256 _voteDistance) external returns (uint256) {
-        uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
-        uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
-        require(_voteIndex <= voteIndex + voteDistance, "NOT_VALID_INDEX");
-        require(_voteDistance > 0, "MIN_DISTANCE");
-        require(_voteIndex + _voteDistance <= voteIndex + voteDistance, "OUT_OF_BOUNDARY");
-        
-        if(_voteDistance < voteDistance) {
-            voteDistance = _voteDistance;
-        }
-
-        uint256 wonAmount = 0;
-        for (uint256 i = 0; i < voteDistance; i++) {
-            uint256 PREwinAmount = gameRounds[_proposalIndex].wonAmount[i + _voteIndex];
-            require(PREwinAmount == 0, "ALREADY_REDEEMED");
-            getVoteResult(_proposalIndex, i + _voteIndex, _voter);
-            uint256 winAmount = gameRounds[_proposalIndex].wonAmount[i + _voteIndex];
-            if (winAmount > 1) {
-                wonAmount += winAmount;
-                gameRounds[_proposalIndex].wonAmount[i + _voteIndex] = 1;
-            }
-        }
-        if (wonAmount > 0) {
-            assert(IERC20(LottoERC20).transferFrom(owner(), _voter, wonAmount));
-        }
-        // assert(IERC20(LottoERC20).transferFrom(owner(), _voter, winAmount));
-
-        // assert(IERC20(LottoERC20).approve(_voter, winAmount));
-        // assert(IERC20(LottoERC20).transfer(_voter, winAmount));
-
-        // IERC20(LottoERC20).approve(_voter, winAmount);
-        // IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
-
-        return wonAmount;
-    }
-
     function withdrawAll(uint256 _proposalIndex, uint256 _voteIndex, address _voter, uint256 _voteDistance) external returns (uint256) {
         uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
         uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
@@ -323,7 +287,7 @@ contract TheOpenFarmDAOsLotto is Ownable {
         uint256 wonAmount = 0;
         for (uint256 i = 0; i < voteDistance; i++) {
             uint256 PREwinAmount = gameRounds[_proposalIndex].wonAmount[i + _voteIndex];
-            require(PREwinAmount > 1, "ALREADY_REDEEMED");
+            require(PREwinAmount != 1, "ALREADY_REDEEMED");
             // getVoteResult(_proposalIndex, i + _voteIndex, _voter);
             uint256 winAmount = gameRounds[_proposalIndex].wonAmount[i + _voteIndex];
             if (winAmount > 1) {
@@ -401,84 +365,6 @@ contract TheOpenFarmDAOsLotto is Ownable {
         
         // return winNumber;
         return mul_resut;
-    }
-
-    function _getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
-        require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
-        uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
-        uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
-        require(_votePos >= voteIndex && _votePos <= voteIndex + voteDistance, "NOT_VOTE_OWNER");
-        require(gameRounds[_proposalIndex].redeemedPercent[_votePos] == 0, "RESULT_ALREADY_EXISTS");
-        uint256 oddRoundVoteLength = gameRounds[_proposalIndex].votes;
-        if (oddRoundVoteLength % 2 == 0)
-        {
-            oddRoundVoteLength++;
-        }
-        
-        uint256 winNumber = (randomRequests[_proposalIndex] * _votePos) % oddRoundVoteLength;
-        uint256 s_randomRange = (randomRequests[_proposalIndex] * _votePos % oddRoundVoteLength);
-        uint256 percentIndex = (1000 * s_randomRange) / oddRoundVoteLength;
-
-        gameRounds[_proposalIndex].redeemedPercent[_votePos] = percentIndex;
-        gameRounds[_proposalIndex].scratchedNumber[_votePos] = winNumber;
-
-        if (percentIndex <= 1)
-        {
-            if (redeemHistory[_proposalIndex][0] < 1)
-            {
-                // uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
-                redeemHistory[_proposalIndex][0] = 1;
-                // assert(IERC20(LottoERC20).approve(_voter, winAmount));
-                // assert(IERC20(LottoERC20).transfer(_voter, winAmount));
-            }
-        } else if (percentIndex <= 2)
-        {
-            if (redeemHistory[_proposalIndex][1] < 2)
-            {
-                // uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 100;
-                redeemHistory[_proposalIndex][1]++;
-                // assert(IERC20(LottoERC20).approve(_voter, winAmount));
-                // assert(IERC20(LottoERC20).transfer(_voter, winAmount));
-            }
-        } else if (percentIndex <= 10)
-        {
-            if (redeemHistory[_proposalIndex][2] < 10)
-            {
-                // uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 100;
-                redeemHistory[_proposalIndex][2]++;
-                // assert(IERC20(LottoERC20).approve(_voter, winAmount));
-                // assert(IERC20(LottoERC20).transfer(_voter, winAmount));
-            }
-        } else if (percentIndex <= 20)
-        {
-            if (redeemHistory[_proposalIndex][3] < 20)
-            {
-                // uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 1000;
-                redeemHistory[_proposalIndex][3]++;
-                // assert(IERC20(LottoERC20).approve(_voter, winAmount));
-                // assert(IERC20(LottoERC20).transfer(_voter, winAmount));
-            }
-        } else if (percentIndex <= 50)
-        {
-            if (redeemHistory[_proposalIndex][4] < 50)
-            {
-                // uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 1000;
-                redeemHistory[_proposalIndex][4]++;
-                // assert(IERC20(LottoERC20).approve(_voter, winAmount));
-                // assert(IERC20(LottoERC20).transfer(_voter, winAmount));
-            }
-        } else if (percentIndex <= 100)
-        {
-            if (redeemHistory[_proposalIndex][5] < 100)
-            {
-                // uint256 winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 1000;
-                redeemHistory[_proposalIndex][5]++;
-                // assert(IERC20(LottoERC20).approve(_voter, winAmount));
-                // assert(IERC20(LottoERC20).transfer(_voter, winAmount));
-            }
-        }
-        
-        return winNumber;
     }
 
     function resolveBet(uint256 _proposalIndex) external returns (bool) {
