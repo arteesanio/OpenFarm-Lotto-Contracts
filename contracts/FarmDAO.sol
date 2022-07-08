@@ -334,7 +334,7 @@ contract TheOpenFarmDAO is Ownable {
     {
         Proposal storage proposal = proposals[_proposalIndex];
 
-        require(proposal.amountOfTokens < proposal.amountOfTokensRequired && proposal.amountOfVotes < proposal.amountOfVotesRequired, "VALID_PROPOSAL");
+        require(proposal.amountOfTokens >= proposal.amountOfTokensRequired && proposal.amountOfVotes >= proposal.amountOfVotesRequired, "VALID_PROPOSAL");
 
         uint256 theAmount = proposal.refAmount[msg.sender];
         require(theAmount != 1, "ALREADY_WITHDREW");
