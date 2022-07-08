@@ -361,7 +361,7 @@ contract TheOpenFarmDAO is Ownable {
         returns (uint256)
     {
         Proposal storage proposal = proposals[_proposalIndex];
-        require(proposal.votersAmountOfTokens[_voter] != 0, "VOTER_NOT_FOUND");
+        require(proposal.votersAmountOfTokens[_voter] != 0, "VOTER_TOKENS_NOT_FOUND");
         return proposal.votersAmountOfTokens[_voter];
     }
     function getVoterAmountOfVotes(uint256 _proposalIndex, address _voter)
@@ -370,8 +370,17 @@ contract TheOpenFarmDAO is Ownable {
         returns (uint256)
     {
         Proposal storage proposal = proposals[_proposalIndex];
-        require(proposal.votersAmountOfVotes[_voter] != 0, "VOTER_NOT_FOUND");
+        require(proposal.votersAmountOfVotes[_voter] != 0, "VOTER_VOTES_NOT_FOUND");
         return proposal.votersAmountOfVotes[_voter];
+    }
+    function getVoterRefAmount(uint256 _proposalIndex, address _voter)
+        external
+        view
+        returns (uint256)
+    {
+        Proposal storage proposal = proposals[_proposalIndex];
+        require(proposal.refAmount[_voter] != 0, "VOTER_REF_NOT_FOUND");
+        return proposal.refAmount[_voter];
     }
     function getVoterVoteIndex(uint256 _proposalIndex, address _voter)
         external
@@ -379,7 +388,7 @@ contract TheOpenFarmDAO is Ownable {
         returns (uint256)
     {
         Proposal storage proposal = proposals[_proposalIndex];
-        require(proposal.votersIndex[_voter] != 0, "VOTER_NOT_FOUND");
+        require(proposal.votersIndex[_voter] != 0, "VOTER_INDEX_NOT_FOUND");
         return proposal.votersIndex[_voter];
     }
     function amountOfVotesRequired(uint256 _proposalIndex)
