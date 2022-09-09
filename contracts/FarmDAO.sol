@@ -161,7 +161,7 @@ interface IOpenLotto {
 
 contract TheOpenFarmDAO is Ownable {
 
-    uint256 public VOTE_COST = 10**13;
+    uint256 public VOTE_COST = 10**17;
     uint256 constant public MAX_INT_TYPE = type(uint256).max;
 
     // We will write contract code here
