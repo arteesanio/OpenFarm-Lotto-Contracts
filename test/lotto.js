@@ -38,12 +38,17 @@ describe('LOTTO Contract', () => {
 			let voting = await DAO.connect(owner).voteOnProposal(0, 1000, owner.address); await voting.wait()
 			await network.provider.send("evm_increaseTime", [3600])
 			await network.provider.send("evm_mine") 
-			
+
 			let newRound = await DAO.connect(owner).executeProposal(0); await newRound.wait()
 			let generation = await LOTTO.connect(owner).requestResolveRound(0); await generation.wait()
 
 			let finish = await LOTTO.connect(owner).resolveBet(0); await finish.wait()
-			// expect(numProposals).to.equal(1)
+
+			// for (var i = 1000 - 1; i >= 0; i--) {
+			// 	let oneResult = await LOTTO.connect(owner).getWonAmount(0,i); 
+			// 	if (oneResult == 0) continue
+			// 	console.log("oneResult",i,ethers.utils.formatEther(oneResult))
+			// }
 		})
 	})
 })

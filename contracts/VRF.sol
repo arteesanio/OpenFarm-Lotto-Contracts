@@ -344,7 +344,7 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
   }
 }
 contract FakeVRF {
-  uint256 theuint = 4269;
+  uint256 theuint = 42690;
   function requestRandomWords() public view {}
   function s_requestId() public pure returns (bytes32) {
     bytes32 keyHash = 0x6e099d640cde6de9d40ac749b4b594126b0169747122711109c9985d47751f93;

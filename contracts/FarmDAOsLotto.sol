@@ -306,64 +306,6 @@ contract TheOpenFarmDAOsLotto is Ownable {
         return wonAmount;
     }
 
-    function getVoteResult(uint256 _proposalIndex, uint256 _votePos, address _voter) public returns (uint256) {
-        require(randomRequests[_proposalIndex] != 0, "RESULT_IS_NOT_DONE");
-        uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
-        uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
-        require(_votePos >= voteIndex && _votePos <= voteIndex + voteDistance, "NOT_VOTE_OWNER");
-        require(gameRounds[_proposalIndex].redeemedPercent[_votePos] == 0, "RESULT_ALREADY_EXISTS");
-
-        // uint256 winNumber = (randomRequests[_proposalIndex] * _votePos) % gameRounds[_proposalIndex].votes;
-        // gameRounds[_proposalIndex].scratchedNumber[_votePos] = winNumber;
-        gameRounds[_proposalIndex].redeemedPercent[_votePos] = (
-            ((randomRequests[_proposalIndex] % gameRounds[_proposalIndex].votes) * _votePos)
-            % gameRounds[_proposalIndex].votes
-        );
-
-        uint256 mul_resut = gameRounds[_proposalIndex].redeemedPercent[_votePos] * 1000 / gameRounds[_proposalIndex].votes;
-        gameRounds[_proposalIndex].scratchedNumber[_votePos] = mul_resut;
-        uint256 winAmount = 0;
-        if (mul_resut <= 2) {
-            if (redeemHistory[_proposalIndex][0] < 1)
-            {
-                winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
-                redeemHistory[_proposalIndex][0] = 1;
-                gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
-            }
-        } else if (mul_resut <= 13) {
-            if (redeemHistory[_proposalIndex][2] < 10)
-            {
-                winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 100;
-                redeemHistory[_proposalIndex][2]++;
-                gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
-            }
-        } else if (mul_resut <= 33) {
-            if (redeemHistory[_proposalIndex][3] < 20)
-            {
-                winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 1000;
-                redeemHistory[_proposalIndex][3]++;
-                gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
-            }
-        } else if (mul_resut <= 83) {
-            if (redeemHistory[_proposalIndex][4] < 50)
-            {
-                winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 1000;
-                redeemHistory[_proposalIndex][4]++;
-                gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
-            }
-        } else if (mul_resut <= 183) {
-            if (redeemHistory[_proposalIndex][5] < 100)
-            {
-                winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 1000;
-                redeemHistory[_proposalIndex][5]++;
-                gameRounds[_proposalIndex].wonAmount[_votePos] = winAmount;
-            }
-        }
-        
-        // return winNumber;
-        return mul_resut;
-    }
-
     function resolveBet(uint256 _proposalIndex) external returns (bool) {
         require(gameRounds[_proposalIndex].amountRaised > 0, "PROPOSAL_DOESNT_EXIST");
         bytes32 requestId = gameRounds[_proposalIndex].randomRequestId;
