@@ -187,8 +187,13 @@ contract TheOpenFarmDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    address public theLotto = 0x1521ABF8B8691b6e86dA04111B1765fcaf0250eb;
-    address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
+    address public theLotto = 0x47baCF0d0701D783F772f0bD94EC98b2cbBC872B;
+    // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
+    address immutable LottoERC20;
+    // constructor () {
+    constructor (address _LottoERC20) {
+        LottoERC20 = _LottoERC20;
+    }
 
     // Create a modifier which only allows a function to be
     // called by someone who owns at least 1 CryptoDevsNFT
@@ -241,15 +246,16 @@ contract TheOpenFarmDAO is Ownable {
         DAOHolderOnly
         returns (uint256)
     {
-        Proposal storage proposal = proposals[numProposals];
-        if (numProposals != 0) {
-            Proposal storage lastProposal = proposals[numProposals - 1];
-            require(block.timestamp > lastProposal.deadline, "ACTIVE_PROPOSAL_EXISTS");
-        }
-        proposal.amountOfVotesRequired = _amountOfVotesRequired;
-        proposal.amountOfTokensRequired = VOTE_COST * _amountOfVotesRequired;
-        // Set the proposal's voting deadline to be (current time + 1 minutes)
-        proposal.deadline = block.timestamp + (_minutes * 1 minutes);
+        //require(_amountOfVotesRequired > 999, "MIN_VOTES_REQUIRED");
+        //Proposal storage proposal = proposals[numProposals];
+        //if (numProposals != 0) {
+            //Proposal storage lastProposal = proposals[numProposals - 1];
+            //require(block.timestamp > lastProposal.deadline, "ACTIVE_PROPOSAL_EXISTS");
+        //}
+        //proposal.amountOfVotesRequired = _amountOfVotesRequired;
+        //proposal.amountOfTokensRequired = VOTE_COST * _amountOfVotesRequired;
+        //// Set the proposal's voting deadline to be (current time + 1 minutes)
+        //proposal.deadline = block.timestamp + (_minutes * 1 minutes);
 
         numProposals++;
 

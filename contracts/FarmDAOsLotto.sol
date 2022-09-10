@@ -182,16 +182,6 @@ interface IToken {
         returns (uint256);
 }
 
-/*
-// $1000 tickets
-// 1 - 200 = 200  - 0.001 - 0.2 %       
-// 2 - 50 = 100   - 0.002 - 0.05 %      
-// 10 - 10 = 100  - 0.01 - 0.01 %       
-// 20 - 5 = 100   - 0.02 - 0.005 %      
-// 50 - 2 = 100   - 0.05 - 0.002 %      
-// 100 - 1 = 100  - 0.1 - 0.001 %       
-// 183 user = total = $700
-*/
 
 interface IRandomResolver {
     function requestRandomWords() external;
