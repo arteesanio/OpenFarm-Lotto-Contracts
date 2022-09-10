@@ -189,7 +189,7 @@ contract TheOpenFarmDAO is Ownable {
 
     address public theLotto = 0x47baCF0d0701D783F772f0bD94EC98b2cbBC872B;
     // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
-    address immutable LottoERC20;
+    address public LottoERC20;
     // constructor () {
     constructor (address _LottoERC20) {
         LottoERC20 = _LottoERC20;
