@@ -448,8 +448,8 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         hasRequestedRandom[_proposalIndex] = true;
 
-        // IRandomResolver(RANDOM_RESOLVER).requestRandomWords();
-        // gameRounds[_proposalIndex].randomRequestId = IRandomResolver(RANDOM_RESOLVER).s_requestId();
+        IRandomResolver(RANDOM_RESOLVER).requestRandomWords();
+        gameRounds[_proposalIndex].randomRequestId = IRandomResolver(RANDOM_RESOLVER).s_requestId();
         gameRounds[_proposalIndex].randomRequestBlock = block.number;
         emit NewRandomRequest(_proposalIndex, gameRounds[_proposalIndex].randomRequestId);
     }

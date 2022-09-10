@@ -248,6 +248,7 @@ contract TheOpenFarmDAO is Ownable {
         DAOHolderOnly
         returns (uint256)
     {
+        require(_minutes > 1, "MIN_VOTES_REQUIRED");
         require(_amountOfVotesRequired > 999, "MIN_VOTES_REQUIRED");
         Proposal storage proposal = proposals[numProposals];
         if (numProposals != 0) {
