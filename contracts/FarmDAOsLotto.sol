@@ -200,8 +200,9 @@ interface IRandomResolver {
 
 contract TheOpenFarmDAOsLotto is Ownable {
 
-    address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
-    address RANDOM_RESOLVER = 0x4C5f09D239E11896ed4B21e5BEba0DE9D777eEbD;
+    // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
+    address public LottoERC20;
+    address public RANDOM_RESOLVER = 0x4C5f09D239E11896ed4B21e5BEba0DE9D777eEbD;
 
     struct Round {
         uint256 randomRequestBlock;
@@ -228,6 +229,10 @@ contract TheOpenFarmDAOsLotto is Ownable {
     mapping(uint256 => bool) public hasRequestedRandom;
 
     event NewRandomRequest(uint256 indexed _proposalIndex, bytes32 requestId);
+
+    constructor(address _LottoERC20) {
+        LottoERC20 = _LottoERC20;
+    }
 
     function getVoteRedeemd(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
         return gameRounds[_proposalIndex].redeemedPercent[_votePos];
@@ -443,8 +448,8 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         hasRequestedRandom[_proposalIndex] = true;
 
-        IRandomResolver(RANDOM_RESOLVER).requestRandomWords();
-        gameRounds[_proposalIndex].randomRequestId = IRandomResolver(RANDOM_RESOLVER).s_requestId();
+        // IRandomResolver(RANDOM_RESOLVER).requestRandomWords();
+        // gameRounds[_proposalIndex].randomRequestId = IRandomResolver(RANDOM_RESOLVER).s_requestId();
         gameRounds[_proposalIndex].randomRequestBlock = block.number;
         emit NewRandomRequest(_proposalIndex, gameRounds[_proposalIndex].randomRequestId);
     }

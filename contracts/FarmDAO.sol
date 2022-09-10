@@ -187,12 +187,14 @@ contract TheOpenFarmDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    address public theLotto = 0x47baCF0d0701D783F772f0bD94EC98b2cbBC872B;
+    // address public theLotto = 0x47baCF0d0701D783F772f0bD94EC98b2cbBC872B;
+    address public theLotto;
     // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
     address public LottoERC20;
     // constructor () {
-    constructor (address _LottoERC20) {
+    constructor (address _LottoERC20, address _theLotto) {
         LottoERC20 = _LottoERC20;
+        theLotto = _theLotto;
     }
 
     // Create a modifier which only allows a function to be
@@ -246,16 +248,16 @@ contract TheOpenFarmDAO is Ownable {
         DAOHolderOnly
         returns (uint256)
     {
-        //require(_amountOfVotesRequired > 999, "MIN_VOTES_REQUIRED");
-        //Proposal storage proposal = proposals[numProposals];
-        //if (numProposals != 0) {
-            //Proposal storage lastProposal = proposals[numProposals - 1];
-            //require(block.timestamp > lastProposal.deadline, "ACTIVE_PROPOSAL_EXISTS");
-        //}
-        //proposal.amountOfVotesRequired = _amountOfVotesRequired;
-        //proposal.amountOfTokensRequired = VOTE_COST * _amountOfVotesRequired;
-        //// Set the proposal's voting deadline to be (current time + 1 minutes)
-        //proposal.deadline = block.timestamp + (_minutes * 1 minutes);
+        require(_amountOfVotesRequired > 999, "MIN_VOTES_REQUIRED");
+        Proposal storage proposal = proposals[numProposals];
+        if (numProposals != 0) {
+            Proposal storage lastProposal = proposals[numProposals - 1];
+            require(block.timestamp > lastProposal.deadline, "ACTIVE_PROPOSAL_EXISTS");
+        }
+        proposal.amountOfVotesRequired = _amountOfVotesRequired;
+        proposal.amountOfTokensRequired = VOTE_COST * _amountOfVotesRequired;
+        // Set the proposal's voting deadline to be (current time + 1 minutes)
+        proposal.deadline = block.timestamp + (_minutes * 1 minutes);
 
         numProposals++;
 

@@ -24,7 +24,7 @@ const polygon = { url: ALCHEMY_API_URL, accounts: [POLYGON_PRIVATE_KEY], timeout
 
 module.exports = {
 	solidity: "0.8.4",
-	defaultNetwork: "polygon",
+	// defaultNetwork: "polygon",
 	mocha: {
 	  timeout: 60000
 	},

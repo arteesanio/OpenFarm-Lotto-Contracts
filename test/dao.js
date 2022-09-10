@@ -9,7 +9,7 @@ describe('DAO Contract', () => {
 		TOKEN = await TOKEN_CONTRACT.deploy()
 		console.log("token.address", TOKEN.address)
 		let DAO_CONTRACT = await ethers.getContractFactory("TheOpenFarmDAO");
-		DAO = await DAO_CONTRACT.deploy(TOKEN.address)
+		DAO = await DAO_CONTRACT.deploy(TOKEN.address,TOKEN.address)
 	
 		let lastNumbers = []
 		let userNumbers = []
