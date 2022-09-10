@@ -15,6 +15,7 @@ Vue.js
 # OpenFarm-Lotto-Contracts
 * npm install
 * npx hardhat compile
+* npx hardhat test
 * npx hardhat run scripts/deploy_1_vrf.js
 * npx hardhat run scripts/deploy_2_lotto.js
 * npx hardhat run scripts/deploy_3_dao.js
