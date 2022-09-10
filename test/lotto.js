@@ -31,12 +31,15 @@ describe('LOTTO Contract', () => {
 		it('Should have one voted', async () => {
 			let voting = await DAO.connect(owner).voteOnProposal(0, 100, owner.address); await voting.wait()
 		})
+		it('Should have to wait', async () => {
+			await expect(DAO.connect(owner).executeProposal(0)).to.be.revertedWith('DEADLINE_NOT_EXCEEDED');
+		})
 		it('Should have resolved a proposal', async () => {
 			let voting = await DAO.connect(owner).voteOnProposal(0, 1000, owner.address); await voting.wait()
 			await network.provider.send("evm_increaseTime", [3600])
 			await network.provider.send("evm_mine") 
+			
 			let newRound = await DAO.connect(owner).executeProposal(0); await newRound.wait()
-
 			let generation = await LOTTO.connect(owner).requestResolveRound(0); await generation.wait()
 
 			let finish = await LOTTO.connect(owner).resolveBet(0); await finish.wait()
