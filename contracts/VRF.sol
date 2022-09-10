@@ -343,3 +343,17 @@ contract VRFv2Consumer is VRFConsumerBaseV2 {
     _;
   }
 }
+contract FakeVRF {
+  uint256 theuint = 42069;
+  function requestRandomWords() public {}
+  function s_requestId() public returns (bytes32) {
+    bytes32 keyHash = 0x6e099d640cde6de9d40ac749b4b594126b0169747122711109c9985d47751f93;
+    return keyHash;
+  }
+  function s_randomWords0() public returns (uint256) {
+    return theuint;
+  }
+  function s_randomWords(uint256) public returns (uint256) {
+    return theuint;
+  }
+}

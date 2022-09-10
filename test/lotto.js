@@ -8,8 +8,11 @@ describe('LOTTO Contract', () => {
 		let TOKEN_CONTRACT = await ethers.getContractFactory("MyToken");
 		TOKEN = await TOKEN_CONTRACT.deploy()
 		console.log("token.address", TOKEN.address)
+		let VRF_CONTRACT = await ethers.getContractFactory("FakeVRF");
+		VRF = await VRF_CONTRACT.deploy()
+		
 		let LOTTO_CONTRACT = await ethers.getContractFactory("TheOpenFarmDAOsLotto");
-		LOTTO = await LOTTO_CONTRACT.deploy(TOKEN.address)
+		LOTTO = await LOTTO_CONTRACT.deploy(TOKEN.address, VRF.address)
 		let DAO_CONTRACT = await ethers.getContractFactory("TheOpenFarmDAO");
 		DAO = await DAO_CONTRACT.deploy(TOKEN.address,LOTTO.address)
 	

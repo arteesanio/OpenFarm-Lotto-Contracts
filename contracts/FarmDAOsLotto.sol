@@ -202,7 +202,8 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
     // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
     address public LottoERC20;
-    address public RANDOM_RESOLVER = 0x4C5f09D239E11896ed4B21e5BEba0DE9D777eEbD;
+    // address public RANDOM_RESOLVER = 0x4C5f09D239E11896ed4B21e5BEba0DE9D777eEbD;
+    address public RANDOM_RESOLVER;
 
     struct Round {
         uint256 randomRequestBlock;
@@ -230,8 +231,9 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
     event NewRandomRequest(uint256 indexed _proposalIndex, bytes32 requestId);
 
-    constructor(address _LottoERC20) {
+    constructor(address _LottoERC20, address _resolver) {
         LottoERC20 = _LottoERC20;
+        RANDOM_RESOLVER = _resolver;
     }
 
     function getVoteRedeemd(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
