@@ -306,6 +306,10 @@ contract TheOpenFarmDAOsLotto is Ownable {
         return wonAmount;
     }
 
+            // gameRounds[_proposalIndex].redeemedPercent[_votePos] = (
+            //     ((randomRequests[_proposalIndex] % gameRounds[_proposalIndex].votes) * _votePos)
+            //     % gameRounds[_proposalIndex].votes
+            // );
     function resolveBet(uint256 _proposalIndex) external returns (bool) {
         require(gameRounds[_proposalIndex].amountRaised > 0, "PROPOSAL_DOESNT_EXIST");
         bytes32 requestId = gameRounds[_proposalIndex].randomRequestId;
@@ -323,11 +327,6 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
             uint256 winnerIndex = (results[i] % gameRounds[_proposalIndex].votes) + 1;
             gameRounds[_proposalIndex].winners[i] = winnerIndex;
-
-            // gameRounds[_proposalIndex].redeemedPercent[_votePos] = (
-            //     ((randomRequests[_proposalIndex] % gameRounds[_proposalIndex].votes) * _votePos)
-            //     % gameRounds[_proposalIndex].votes
-            // );
 
             if (i == 0) {
                 winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
