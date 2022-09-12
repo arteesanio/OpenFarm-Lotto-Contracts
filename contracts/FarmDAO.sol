@@ -190,11 +190,10 @@ contract TheOpenLottoDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    // address public theLotto = 0x47baCF0d0701D783F772f0bD94EC98b2cbBC872B; // TheOpenLotto
+    // address public theLotto = 0xF250a014CE4f238936b295892BA172941AaA084e; // TheOpenLotto
+    // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // DAI Polygon Network
     address public theLotto;
-    // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // DAI Polygon Networ
     address public LottoERC20;
-    // constructor () {
     constructor (address _LottoERC20, address _theLotto) {
         LottoERC20 = _LottoERC20;
         theLotto = _theLotto;

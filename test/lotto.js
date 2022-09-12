@@ -36,6 +36,36 @@ describe('LOTTO Contract', () => {
 		it('Should have to wait', async () => {
 			await expect(DAO.connect(owner).executeProposal(0)).to.be.revertedWith('DEADLINE_NOT_EXCEEDED');
 		})
+		it('Should withdrawn from failed proposal', async () => {
+			let balance1 = await TOKEN.balanceOf(owner.address);
+			let balance2 = await TOKEN.connect(owner).transfer(addr1.address, ethers.utils.parseEther("300"));
+			
+			{
+				let balancea = await TOKEN.balanceOf(owner.address); console.log("balancea", ethers.utils.formatEther(balancea))
+				let balanceb = await TOKEN.balanceOf(addr1.address); console.log("balanceb", ethers.utils.formatEther(balanceb))
+			}
+			let voting = await DAO.connect(addr1).voteOnProposal(0, 250, owner.address); await voting.wait()
+			let voting2 = await DAO.connect(owner).voteOnProposal(0, 150, addr1.address); await voting2.wait()
+			await network.provider.send("evm_increaseTime", [3600])
+			await network.provider.send("evm_mine") 
+			await expect(DAO.connect(owner).executeProposal(0)).to.be.revertedWith('NOT_ENOUGH_TOKENS');
+
+
+			{
+				let balancea = await TOKEN.balanceOf(owner.address); console.log("balancea", ethers.utils.formatEther(balancea))
+				let balanceb = await TOKEN.balanceOf(addr1.address); console.log("balanceb", ethers.utils.formatEther(balanceb))
+			}
+			{
+				let withdraw = await DAO.connect(owner).withdrawFromFailedProposal(0);
+				console.log("withdraw")
+				console.log(withdraw.value.toString())
+			}
+
+			{
+				let balancea = await TOKEN.balanceOf(owner.address); console.log("balancea", ethers.utils.formatEther(balancea))
+				let balanceb = await TOKEN.balanceOf(addr1.address); console.log("balanceb", ethers.utils.formatEther(balanceb))
+			}
+		})
 		it('Should have resolved a proposal', async () => {
 			let balance1 = await TOKEN.balanceOf(owner.address);
 			let balance2 = await TOKEN.connect(owner).transfer(addr1.address, ethers.utils.parseEther("300"));

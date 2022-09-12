@@ -204,11 +204,6 @@ interface IRandomResolver {
  */
 contract TheOpenLotto is Ownable {
 
-    // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // DAI Polygon Networ
-    address public LottoERC20;
-    // address public RANDOM_RESOLVER = 0x4C5f09D239E11896ed4B21e5BEba0DE9D777eEbD;
-    address public RANDOM_RESOLVER;
-
     struct Round {
         uint256 randomRequestBlock;
         uint256 randomResultBlock;
@@ -239,6 +234,11 @@ contract TheOpenLotto is Ownable {
     mapping(uint256 => bool) public hasRequestedRandom;
     event NewRandomRequest(uint256 indexed _proposalIndex, bytes32 requestId);
 
+
+    // address public LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // DAI Polygon Network
+    // address public RANDOM_RESOLVER = 0x4C5f09D239E11896ed4B21e5BEba0DE9D777eEbD; // VRF Coordinator
+    address public LottoERC20;
+    address public RANDOM_RESOLVER;
     constructor(address _LottoERC20, address _resolver) {
         LottoERC20 = _LottoERC20;
         RANDOM_RESOLVER = _resolver;
