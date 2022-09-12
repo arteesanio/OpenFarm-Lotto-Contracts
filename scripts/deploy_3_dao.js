@@ -14,10 +14,10 @@ async function main() {
 
   // return
 
-  const CONTRACT_object = await ethers.getContractFactory("TheOpenFarmDAO");
+  const CONTRACT_object = await ethers.getContractFactory("TheOpenLottoDAO");
   const deployedContract = await CONTRACT_object.deploy();
   await deployedContract.deployed();
-  console.log("Contract: Farm DAO | Address:", deployedContract.address);
+  console.log("Contract: Lotto DAO | Address:", deployedContract.address);
   // let init_hash = await deployedContract.INIT_CODE_PAIR_HASH()
   // console.log("init_hash:", init_hash);
 }

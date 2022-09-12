@@ -159,13 +159,16 @@ interface IOpenLotto {
 }
 
 
-contract TheOpenFarmDAO is Ownable {
+/** @title The Open DAO.
+ * @notice It is a contract for a "DAO" system mainly
+ * to control lottery rounds.
+ */
+contract TheOpenLottoDAO is Ownable {
 
     uint256 public VOTE_COST = 10**17;
     uint256 constant public MAX_INT_TYPE = type(uint256).max;
 
-    // We will write contract code here
-    // Create a struct named Proposal containing all relevant information
+    // All relevant information regarding proposals
     struct Proposal {
         uint256 amountOfVotes;
         uint256 amountOfVotesRequired;
@@ -182,14 +185,14 @@ contract TheOpenFarmDAO is Ownable {
         mapping(address => uint256) refAmount;
     }
 
-    // Create a mapping of ID to Proposal
+    // Keep track of proposals by its id
     mapping(uint256 => Proposal) public proposals;
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    // address public theLotto = 0x47baCF0d0701D783F772f0bD94EC98b2cbBC872B;
+    // address public theLotto = 0x47baCF0d0701D783F772f0bD94EC98b2cbBC872B; // TheOpenLotto
     address public theLotto;
-    // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
+    // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // DAI Polygon Networ
     address public LottoERC20;
     // constructor () {
     constructor (address _LottoERC20, address _theLotto) {
@@ -197,15 +200,15 @@ contract TheOpenFarmDAO is Ownable {
         theLotto = _theLotto;
     }
 
-    // Create a modifier which only allows a function to be
-    // called by someone who owns at least 1 CryptoDevsNFT
+    // Only allows to be called by
+    // someone who approves at least 1 DAI satoshi to this contract
     modifier DAOHolderOnly() {
         require(IERC20(LottoERC20).allowance(msg.sender, address(this)) > 0, "NOT_A_DAO_MEMBER");
         _;
     }
 
-    // Create a modifier which only allows a function to be
-    // called if the given proposal's deadline has not been exceeded yet
+    // Only allows a function to be called if
+    // the given proposal's deadline has NOT been exceeded yet
     modifier runningProposalOnly(uint256 proposalIndex) {
         require(
             proposals[proposalIndex].deadline > block.timestamp,
@@ -214,8 +217,8 @@ contract TheOpenFarmDAO is Ownable {
         _;
     }
 
-    // Create a modifier which only allows a function to be
-    // called if the given proposals' deadline HAS been exceeded
+    // Only allows a function to be called if
+    // the given proposals' deadline HAS been exceeded
     // and if the proposal has not yet been executed
     modifier inactiveProposalOnly(uint256 proposalIndex) {
         require(
@@ -235,13 +238,13 @@ contract TheOpenFarmDAO is Ownable {
         );
         _;
     }
-
-      function setLotto(address _lotto) external onlyOwner {
+    function setLotto(address _lotto) external onlyOwner {
         theLotto = _lotto;
-      }
+    }
 
     /// @dev createProposal allows a DAO Token holder to create a new proposal in the DAO
-    /// @param _amountOfVotesRequired - the tokenID of the NFT to be purchased from FakeNFTMarketplace if this proposal passes
+    /// @param _amountOfVotesRequired - minimum amount of votes for the proposal to pass
+    /// @param _minutes - maximum amount of votes for the minimum to be satisfied
     /// @return Returns the proposal index for the newly created proposal
     function createProposal(uint256 _amountOfVotesRequired, uint256 _minutes)
         external
@@ -268,6 +271,7 @@ contract TheOpenFarmDAO is Ownable {
     /// @dev voteOnProposal allows a DAO Token holder to cast their vote on an active proposal
     /// @param _proposalIndex - the index of the proposal to vote on in the proposals array
     /// @param _amountOfVotes - the type of vote they want to cast
+    /// @param _ref - referral address for extra rewards
     function voteOnProposal(uint256 _proposalIndex, uint256 _amountOfVotes, address _ref)
         external
         DAOHolderOnly
@@ -313,7 +317,7 @@ contract TheOpenFarmDAO is Ownable {
     }
 
 
-    /// @dev withdrawFromProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
+    /// @dev withdrawFromProposal allows any DAO Token holder to withdraw the staked amount after it's deadline has been exceeded
     /// @param _proposalIndex - the index of the proposal to execute in the proposals array
     function withdrawFromFailedProposal(uint256 _proposalIndex)
         external
@@ -334,7 +338,7 @@ contract TheOpenFarmDAO is Ownable {
     }
 
 
-    /// @dev withdrawFromProposal allows any DAO Token holder to execute a proposal after it's deadline has been exceeded
+    /// @dev withdrawFromProposal allows any DAO Token holder to withdraw the referral rewards after it's deadline has been exceeded
     /// @param _proposalIndex - the index of the proposal to execute in the proposals array
     function withdrawRefBonus(uint256 _proposalIndex)
         external
@@ -354,7 +358,7 @@ contract TheOpenFarmDAO is Ownable {
         proposal.refAmount[msg.sender] = 1;
     }
 
-    /// @dev withdrawEther allows the contract owner (deployer) to withdraw the ETH from the contract
+    /// @dev withdrawEther allows the contract owner to withdraw the ETH from the contract
     function withdrawEther() external onlyOwner {
         payable(owner()).transfer(address(this).balance);
     }

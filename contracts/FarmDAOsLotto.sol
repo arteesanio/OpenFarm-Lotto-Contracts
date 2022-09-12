@@ -198,16 +198,19 @@ interface IRandomResolver {
     // function lastRandomResultsOf(uint256 userAddress) external returns (uint256);
 }
 
-contract TheOpenFarmDAOsLotto is Ownable {
+/** @title Open Lottery.
+ * @notice It is a contract for a lottery system using
+ * randomness provided externally controlled by a DAO.
+ */
+contract TheOpenLotto is Ownable {
 
-    // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
+    // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // DAI Polygon Networ
     address public LottoERC20;
     // address public RANDOM_RESOLVER = 0x4C5f09D239E11896ed4B21e5BEba0DE9D777eEbD;
     address public RANDOM_RESOLVER;
 
     struct Round {
         uint256 randomRequestBlock;
-        uint256 randomResult;
         uint256 randomResultBlock;
         uint256 lockedFunds;
         uint256 amountRaised;
@@ -215,20 +218,25 @@ contract TheOpenFarmDAOsLotto is Ownable {
 
         bytes32 randomRequestId;
         uint8 lastResult;
-        mapping(uint256 => uint256) redeemedPercent;
+    }
+    struct RoundLog {
+        uint256 randomResult;
         mapping(uint256 => uint256) scratchedNumber;
         mapping(uint256 => uint256) wonAmount;
         uint256[83] winners;
     }
 
-    // uint256 public MIN_AMOUNT = 10**18;
-    // uint256 public MIN_VOTES = 1000;
-
-    mapping(uint256 => uint256[6]) public redeemHistory;
-    mapping(uint256 => uint256) public randomRequests;
+    // Keeps track of round progress
     mapping(uint256 => Round) public gameRounds;
-    mapping(uint256 => bool) public hasRequestedRandom;
+    // Keeps track of round results
+    mapping(uint256 => RoundLog) public gameLogs;
+    // For verifying maximun amount of winners per bracket
+    mapping(uint256 => uint256[6]) public redeemHistory;
 
+    // Keeps track of VRF requests per round
+    mapping(uint256 => uint256) public randomRequests;
+    // Keeps track of duplicate VRF requests
+    mapping(uint256 => bool) public hasRequestedRandom;
     event NewRandomRequest(uint256 indexed _proposalIndex, bytes32 requestId);
 
     constructor(address _LottoERC20, address _resolver) {
@@ -236,145 +244,9 @@ contract TheOpenFarmDAOsLotto is Ownable {
         RANDOM_RESOLVER = _resolver;
     }
 
-    function getVoteRedeemd(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
-        return gameRounds[_proposalIndex].redeemedPercent[_votePos];
-    }
-    function getVoteScratchedNumber(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
-        return gameRounds[_proposalIndex].scratchedNumber[_votePos];
-    }
-    function getWonAmount(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
-        return gameRounds[_proposalIndex].wonAmount[_votePos];
-    }
-    function getWinner(uint256 _proposalIndex, uint256 _winnerIndex) external view returns (uint256) {
-        return gameRounds[_proposalIndex].winners[_winnerIndex];
-    }
-
-    function withdrawAmount(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
-        uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
-        uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
-        require(_votePos >= voteIndex && _votePos <= voteIndex + voteDistance, "NOT_VOTE_OWNER");
-        uint256 winAmount = gameRounds[_proposalIndex].wonAmount[_votePos];
-
-        require(winAmount > 0, "INVALID_WIN");
-        require(winAmount > 1, "ALREADY_REDEEMED");
-
-        assert(IERC20(LottoERC20).transferFrom(owner(), _voter, winAmount));
-
-        // assert(IERC20(LottoERC20).approve(_voter, winAmount));
-        // assert(IERC20(LottoERC20).transfer(_voter, winAmount));
-
-        // IERC20(LottoERC20).approve(_voter, winAmount);
-        // IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
-
-        gameRounds[_proposalIndex].wonAmount[_votePos] = 1;
-        return winAmount;
-    }
-
-    function withdrawAll(uint256 _proposalIndex, uint256 _voteIndex, address _voter, uint256 _voteDistance) external returns (uint256) {
-        uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
-        uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
-        require(_voteIndex <= voteIndex + voteDistance, "NOT_VALID_INDEX");
-        require(_voteDistance > 0, "MIN_DISTANCE");
-        require(_voteIndex + _voteDistance <= voteIndex + voteDistance, "OUT_OF_BOUNDARY");
-        
-        if(_voteDistance < voteDistance) {
-            voteDistance = _voteDistance;
-        }
-
-        uint256 wonAmount = 0;
-        for (uint256 i = 0; i < voteDistance; i++) {
-            uint256 PREwinAmount = gameRounds[_proposalIndex].wonAmount[i + _voteIndex];
-            require(PREwinAmount != 1, "ALREADY_REDEEMED");
-            // getVoteResult(_proposalIndex, i + _voteIndex, _voter);
-            uint256 winAmount = gameRounds[_proposalIndex].wonAmount[i + _voteIndex];
-            if (winAmount > 1) {
-                wonAmount += winAmount;
-                gameRounds[_proposalIndex].wonAmount[i + _voteIndex] = 1;
-            }
-        }
-        if (wonAmount > 0) {
-            assert(IERC20(LottoERC20).transferFrom(owner(), _voter, wonAmount));
-        }
-        // assert(IERC20(LottoERC20).transferFrom(owner(), _voter, winAmount));
-
-        // assert(IERC20(LottoERC20).approve(_voter, winAmount));
-        // assert(IERC20(LottoERC20).transfer(_voter, winAmount));
-
-        // IERC20(LottoERC20).approve(_voter, winAmount);
-        // IERC20(LottoERC20).transferFrom(address(this),_voter,winAmount);
-
-        return wonAmount;
-    }
-
-            // gameRounds[_proposalIndex].redeemedPercent[_votePos] = (
-            //     ((randomRequests[_proposalIndex] % gameRounds[_proposalIndex].votes) * _votePos)
-            //     % gameRounds[_proposalIndex].votes
-            // );
-    function resolveBet(uint256 _proposalIndex) external returns (bool) {
-        require(gameRounds[_proposalIndex].amountRaised > 0, "PROPOSAL_DOESNT_EXIST");
-        bytes32 requestId = gameRounds[_proposalIndex].randomRequestId;
-        require(requestId == IRandomResolver(RANDOM_RESOLVER).s_requestId(), "REQUEST_NOT_CURRENT");
-        require(randomRequests[_proposalIndex] == 0, "RESULT_ALREADY_DONE");
-
-        gameRounds[_proposalIndex].randomResultBlock = block.number;
-        randomRequests[_proposalIndex] = IRandomResolver(RANDOM_RESOLVER).s_randomWords0();
-        gameRounds[_proposalIndex].randomResult = IRandomResolver(RANDOM_RESOLVER).s_randomWords(0);
-
-        uint256[] memory results = expand(gameRounds[_proposalIndex].randomResult, 83);
-        uint256 winAmount;
-
-        for (uint256 i = 0; i < 83; i++) {
-
-            uint256 winnerIndex = (results[i] % gameRounds[_proposalIndex].votes) + 1;
-            gameRounds[_proposalIndex].winners[i] = winnerIndex;
-
-            if (i == 0) {
-                winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
-            } else if(i < 3) {
-                winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 100;
-            } else if(i < 13) {
-                winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 100;
-            } else if(i < 33) {
-                winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 1000;
-            } else {
-                winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 1000;
-            }
-
-            gameRounds[_proposalIndex].wonAmount[winnerIndex] = winAmount;
-            gameRounds[_proposalIndex].scratchedNumber[winnerIndex] = i;
-            gameRounds[_proposalIndex].redeemedPercent[winnerIndex] = i;
-
-            // uint256 PREwinAmount = gameRounds[_proposalIndex].wonAmount[winnerIndex];
-            // require(PREwinAmount == 0, "ALREADY_REDEEMED");
-            // getVoteResult(_proposalIndex, i + _voteIndex, _voter);
-            // uint256 winAmount = gameRounds[_proposalIndex].wonAmount[i + _voteIndex];
-            // if (winAmount > 1) {
-            //     wonAmount += winAmount;
-            //     gameRounds[_proposalIndex].wonAmount[i + _voteIndex] = 1;
-            // }
-        }
-
-        // assert(IERC20(LottoERC20).transferFrom(address(this), owner(), gameRounds[_proposalIndex].amountRaised * 3 / 10));
-        bool result = true;
-        // IRandomResolver(RANDOM_RESOLVER).resetLastRandom(_proposalIndex);
-        return result;
-    }
-    function expand(uint256 randomValue, uint256 n) public pure returns (uint256[] memory expandedValues) {
-        expandedValues = new uint256[](n);
-        for (uint256 i = 0; i < n; i++) {
-            expandedValues[i] = uint256(keccak256(abi.encode(randomValue, i)));
-        }
-        return expandedValues;
-    }
-    function emergencyWithdraw() external onlyOwner {
-        assert(IERC20(LottoERC20).transferFrom(address(this), owner(), IERC20(LottoERC20).balanceOf(address(this))));
-    }
-
     function newRound(uint256 _proposalIndex, uint256 _amount, uint256 _votes) external onlyOwner {
         require(!hasRequestedRandom[_proposalIndex], "RANDOM_REQUEST_EXISTS");
         require(gameRounds[_proposalIndex].amountRaised == 0, "PROPOSAL_EXIST");
-        // require(_amount > MIN_AMOUNT, "MINIMUN_ROUND_AMOUNT");
-        // require(_votes > MIN_VOTES, "MINIMUN_VOTES");
 
         gameRounds[_proposalIndex].amountRaised = _amount;
         gameRounds[_proposalIndex].lockedFunds = gameRounds[_proposalIndex].amountRaised * 7 / 10;
@@ -395,5 +267,109 @@ contract TheOpenFarmDAOsLotto is Ownable {
         gameRounds[_proposalIndex].randomRequestId = IRandomResolver(RANDOM_RESOLVER).s_requestId();
         gameRounds[_proposalIndex].randomRequestBlock = block.number;
         emit NewRandomRequest(_proposalIndex, gameRounds[_proposalIndex].randomRequestId);
+    }
+
+    function withdrawAmount(uint256 _proposalIndex, uint256 _votePos, address _voter) external returns (uint256) {
+        uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
+        uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
+        require(_votePos >= voteIndex && _votePos <= voteIndex + voteDistance, "NOT_VOTE_OWNER");
+        uint256 winAmount = gameLogs[_proposalIndex].wonAmount[_votePos];
+
+        require(winAmount > 0, "INVALID_WIN");
+        require(winAmount > 1, "ALREADY_REDEEMED");
+
+        assert(IERC20(LottoERC20).transferFrom(owner(), _voter, winAmount));
+
+        gameLogs[_proposalIndex].wonAmount[_votePos] = 1;
+        return winAmount;
+    }
+
+    function withdrawAll(uint256 _proposalIndex, uint256 _voteIndex, address _voter, uint256 _voteDistance) external returns (uint256) {
+        uint256 voteIndex = IOpenDAO(owner()).getVoterVoteIndex(_proposalIndex, _voter);
+        uint256 voteDistance = IOpenDAO(owner()).getVoterAmountOfVotes(_proposalIndex, _voter);
+        require(_voteIndex <= voteIndex + voteDistance, "NOT_VALID_INDEX");
+        require(_voteDistance > 0, "MIN_DISTANCE");
+        require(_voteIndex + _voteDistance <= voteIndex + voteDistance, "OUT_OF_BOUNDARY");
+        
+        if(_voteDistance < voteDistance) {
+            voteDistance = _voteDistance;
+        }
+
+        uint256 wonAmount = 0;
+        for (uint256 i = 0; i < voteDistance; i++) {
+            uint256 PREwinAmount = gameLogs[_proposalIndex].wonAmount[i + _voteIndex];
+            require(PREwinAmount != 1, "ALREADY_REDEEMED");
+            // getVoteResult(_proposalIndex, i + _voteIndex, _voter);
+            uint256 winAmount = gameLogs[_proposalIndex].wonAmount[i + _voteIndex];
+            if (winAmount > 1) {
+                wonAmount += winAmount;
+                gameLogs[_proposalIndex].wonAmount[i + _voteIndex] = 1;
+            }
+        }
+        if (wonAmount > 0) {
+            assert(IERC20(LottoERC20).transferFrom(owner(), _voter, wonAmount));
+        }
+
+        return wonAmount;
+    }
+
+    function resolveBet(uint256 _proposalIndex) external returns (bool) {
+        require(gameRounds[_proposalIndex].amountRaised > 0, "PROPOSAL_DOESNT_EXIST");
+        bytes32 requestId = gameRounds[_proposalIndex].randomRequestId;
+        require(requestId == IRandomResolver(RANDOM_RESOLVER).s_requestId(), "REQUEST_NOT_CURRENT");
+        require(randomRequests[_proposalIndex] == 0, "RESULT_ALREADY_DONE");
+
+        gameRounds[_proposalIndex].randomResultBlock = block.number;
+        randomRequests[_proposalIndex] = IRandomResolver(RANDOM_RESOLVER).s_randomWords0();
+        gameLogs[_proposalIndex].randomResult = IRandomResolver(RANDOM_RESOLVER).s_randomWords(0);
+
+        uint256[] memory results = expand(gameLogs[_proposalIndex].randomResult, 83);
+        uint256 winAmount;
+
+        for (uint256 i = 0; i < 83; i++) {
+
+            uint256 winnerIndex = (results[i] % gameRounds[_proposalIndex].votes) + 1;
+            gameLogs[_proposalIndex].winners[i] = winnerIndex;
+
+            if (i == 0) {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 10;
+            } else if(i < 3) {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 100;
+            } else if(i < 13) {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 1 / 100;
+            } else if(i < 33) {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 5 / 1000;
+            } else {
+                winAmount = gameRounds[_proposalIndex].amountRaised * 2 / 1000;
+            }
+
+            gameLogs[_proposalIndex].wonAmount[winnerIndex] = winAmount;
+            gameLogs[_proposalIndex].scratchedNumber[winnerIndex] = i;
+
+        }
+
+        bool result = true;
+        return result;
+    }
+
+    function getVoteScratchedNumber(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
+        return gameLogs[_proposalIndex].scratchedNumber[_votePos];
+    }
+    function getWonAmount(uint256 _proposalIndex, uint256 _votePos) external view returns (uint256) {
+        return gameLogs[_proposalIndex].wonAmount[_votePos];
+    }
+    function getWinner(uint256 _proposalIndex, uint256 _winnerIndex) external view returns (uint256) {
+        return gameLogs[_proposalIndex].winners[_winnerIndex];
+    }
+    function emergencyWithdraw() external onlyOwner {
+        assert(IERC20(LottoERC20).transferFrom(address(this), owner(), IERC20(LottoERC20).balanceOf(address(this))));
+    }
+
+    function expand(uint256 randomValue, uint256 n) public pure returns (uint256[] memory expandedValues) {
+        expandedValues = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) {
+            expandedValues[i] = uint256(keccak256(abi.encode(randomValue, i)));
+        }
+        return expandedValues;
     }
 }

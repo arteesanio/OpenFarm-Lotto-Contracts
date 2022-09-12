@@ -12,9 +12,9 @@ describe('LOTTO Contract', () => {
 		let VRF_CONTRACT = await ethers.getContractFactory("FakeVRF");
 		VRF = await VRF_CONTRACT.deploy()
 
-		let LOTTO_CONTRACT = await ethers.getContractFactory("TheOpenFarmDAOsLotto");
+		let LOTTO_CONTRACT = await ethers.getContractFactory("TheOpenLotto");
 		LOTTO = await LOTTO_CONTRACT.deploy(TOKEN.address, VRF.address)
-		let DAO_CONTRACT = await ethers.getContractFactory("TheOpenFarmDAO");
+		let DAO_CONTRACT = await ethers.getContractFactory("TheOpenLottoDAO");
 		DAO = await DAO_CONTRACT.deploy(TOKEN.address,LOTTO.address)
 	
 		await LOTTO.connect(owner).transferOwnership(DAO.address);
@@ -83,8 +83,19 @@ describe('LOTTO Contract', () => {
 				let balancea = await TOKEN.balanceOf(owner.address); console.log("balancea", ethers.utils.formatEther(balancea))
 				let balanceb = await TOKEN.balanceOf(addr1.address); console.log("balanceb", ethers.utils.formatEther(balanceb))
 			}
-			let balancetotal = await TOKEN.balanceOf(DAO.address); console.log(" balance total", ethers.utils.formatEther(balancetotal))
+			let balancetotal = await TOKEN.balanceOf(DAO.address); console.log("dao balance total", ethers.utils.formatEther(balancetotal))
+			let balancetotallotto = await TOKEN.balanceOf(LOTTO.address); console.log("lotto balance total", ethers.utils.formatEther(balancetotallotto))
+			{
+				let withdraw = await DAO.connect(owner).withdrawBalance();
+				console.log("withdraw")
+				console.log(withdraw.value.toString())
+				let balancetotal2 = await TOKEN.balanceOf(DAO.address); console.log("2 dao balance total", ethers.utils.formatEther(balancetotal2))
+			}
 
+			{
+				let balancea = await TOKEN.balanceOf(owner.address); console.log("balancea", ethers.utils.formatEther(balancea))
+				let balanceb = await TOKEN.balanceOf(addr1.address); console.log("balanceb", ethers.utils.formatEther(balanceb))
+			}
 		})
 	})
 })

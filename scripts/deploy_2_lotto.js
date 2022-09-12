@@ -14,7 +14,7 @@ async function main() {
 
   // return
 
-  const CONTRACT_object = await ethers.getContractFactory("TheOpenFarmDAOsLotto");
+  const CONTRACT_object = await ethers.getContractFactory("TheOpenLotto");
   const deployedContract = await CONTRACT_object.deploy();
   await deployedContract.deployed();
   console.log("Contract: Farm Lotto | Address:", deployedContract.address);
