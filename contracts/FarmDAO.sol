@@ -165,7 +165,7 @@ interface IOpenLotto {
  */
 contract TheOpenLottoDAO is Ownable {
 
-    uint256 public VOTE_COST = 10**17;
+    uint256 public VOTE_COST = 10**16;
     uint256 constant public MAX_INT_TYPE = type(uint256).max;
 
     // All relevant information regarding proposals
@@ -190,7 +190,7 @@ contract TheOpenLottoDAO is Ownable {
     // Number of proposals that have been created
     uint256 public numProposals;
 
-    // address public theLotto = 0xF250a014CE4f238936b295892BA172941AaA084e; // TheOpenLotto
+    // address public theLotto = 0x9ea7574d0E7A2cd3A041eCfe29F97AeF71E47b93; // TheOpenLotto
     // address LottoERC20 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // DAI Polygon Network
     address public theLotto;
     address public LottoERC20;
