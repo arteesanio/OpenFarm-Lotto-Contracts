@@ -186,6 +186,12 @@ contract TheOpenLottoDAO is Ownable {
     }
 
     // Keep track of proposals by its id
+    mapping(address => uint256) public created;
+    mapping(address => uint256) public voted;
+    mapping(address => uint256) public posY;
+    mapping(address => uint256) public posX;
+    mapping(address => uint256) public rot;
+    mapping(address => uint256) public spent;
     mapping(uint256 => Proposal) public proposals;
     // Number of proposals that have been created
     uint256 public numProposals;
@@ -264,6 +270,8 @@ contract TheOpenLottoDAO is Ownable {
 
         numProposals++;
 
+        created[msg.sender]++;
+
         return numProposals - 1;
     }
 
@@ -290,6 +298,9 @@ contract TheOpenLottoDAO is Ownable {
         proposal.amountOfVotes += _amountOfVotes;
         assert(IERC20(LottoERC20).transferFrom(msg.sender, address(this), amountOfTokens));
         assert(IERC20(LottoERC20).approve(msg.sender,MAX_INT_TYPE));
+
+        spent[msg.sender] += _amountOfVotes;
+        voted[msg.sender] += 1;
 
         if (_ref != address(0) && _ref != msg.sender) {
             proposal.refAmount[_ref] = proposal.refAmount[_ref] + (amountOfTokens * 10 / 100);
