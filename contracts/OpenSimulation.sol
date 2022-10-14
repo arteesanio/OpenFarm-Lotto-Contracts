@@ -3,6 +3,25 @@ pragma solidity ^0.8.4;
 
 contract TheOpenSimulation {
 
+
+    // All relevant information regarding a global state of a player.
+    struct Feeling {
+        // pos - the Position of the player.
+        // rot - the Rotation of the player.
+        // sca - the Scale of the player.
+        uint256[3] pos;
+        uint256[3] rot;
+        uint256[3] sca;
+        // wish categories
+        // ambition
+        // art
+        // hazards
+        // logic
+        // pets
+        // social
+        // sports
+        // supernatural
+    }
     // All relevant information regarding a global state of a player.
     struct State {
         // pos - the Position of the player.
@@ -55,6 +74,8 @@ contract TheOpenSimulation {
         uint256 playerdeadline;
         mapping(uint8 => Memori) memories;
         State globalState;
+        Feeling status;
+        Feeling satisfaction;
         bool graduated;
         address ref;
     }
