@@ -24,14 +24,14 @@ describe('DAO Contract', () => {
 		it('Should have minted a token', async () => {
 			let totalSupply = await TOKEN.totalSupply();
 			console.log("totalSupply",ethers.utils.formatEther(totalSupply),totalSupply.toString())
-			expect(totalSupply).to.equal(ethers.utils.parseEther("1000"))
+			expect(totalSupply).to.equal(ethers.utils.parseEther("100000"))
 		})
 		it('Should have signed up to DAO', async () => {
 			await TOKEN.connect(owner).approve(DAO.address, ethers.utils.parseEther("999"));
 		})
 		it('Should have all balance', async () => {
 			let balanceOfOwner = await TOKEN.balanceOf(owner.address);
-			expect(balanceOfOwner).to.equal(ethers.utils.parseEther("1000"))
+			expect(balanceOfOwner).to.equal(ethers.utils.parseEther("100000"))
 		})
 		it('Should have one proposal', async () => {
 			await TOKEN.connect(owner).approve(DAO.address, ethers.utils.parseEther("999"));
