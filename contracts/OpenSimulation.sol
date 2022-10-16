@@ -176,7 +176,7 @@ contract TheOpenSimulation {
         {
             player.status.energy += _amount;        
         } else {
-            player.status.energy = 0;
+            player.status.energy /= 2;
         }
         
 
