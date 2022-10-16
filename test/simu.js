@@ -46,7 +46,7 @@ describe('Simulation Contract', () => {
 				console.log(THOUGHT_CATEGORY_LIST[item.thoughtCat])
 			})
 
-			
+
 			let addEnergyTx = await SIMULATION.connect(addr2).addPlayerEnergy(8)
 			let selectedPplayer = await SIMULATION.players(addr2.address)
 			console.log(selectedPplayer.status)
@@ -57,6 +57,9 @@ describe('Simulation Contract', () => {
 				"player 2 | main wish:", THOUGHT_CATEGORY_LIST[aPlayerWish.thoughtCat]
 			)
 			console.log(aPlayerWish.birthunix.toString(),"\n\n\n")
+
+			// should fail
+			await expect(SIMULATION.connect(addr2).addPlayerEnergy(8)).to.be.reverted
 		})
 	})
 })

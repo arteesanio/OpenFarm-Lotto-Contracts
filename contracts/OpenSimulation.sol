@@ -101,6 +101,7 @@ contract TheOpenSimulation {
         Memori[] memories;
         State globalState;
         Status status;
+        uint256 lastSave;
         bool graduated;
         address ref;
     }
@@ -170,6 +171,7 @@ contract TheOpenSimulation {
     function addPlayerEnergy(uint8 _amount) public alivePlayerOnly(msg.sender) returns (uint8)
     {
         Player storage player = players[msg.sender];
+        require(player.lastSave == 0 || block.timestamp > player.lastSave + 12 hours, "RECENT_ACTIVITY");
         player.status.energy += _amount;
 
         // deterministic random category based on block timestamp,
@@ -210,26 +212,11 @@ contract TheOpenSimulation {
 
         player.status = Status(7,7,7,7,[111,111],[111,111],[111,111]);
 
-        uint256[] memory deterministicRandomResults = expand(player.birthunix, 3);
+        uint256[] memory deterministicRandomResults = expand(block.timestamp, 3);
         for (uint256 i = 0; i < 3; i++) {
             ThoughtCategory randomThoughtCat = ThoughtCategory(deterministicRandomResults[i] % 7);
-            uint256 randomThoughtIndex = player.birthunix % thoughts[uint(randomThoughtCat)].length;
+            uint256 randomThoughtIndex = block.timestamp % thoughts[uint(randomThoughtCat)].length;
             _addPlayerMemory(msg.sender,randomThoughtCat,randomThoughtIndex);
-        }
-    }
-
-    function _createTestPlayer(address _player) external unregisteredOnly(_player)
-    {
-        Player storage player = players[_player];
-        player.name = "test";
-        player.birthunix = block.timestamp;
-        player.deadline = block.timestamp + 21 days;
-
-        uint256[] memory deterministicRandomResults = expand(player.birthunix, 3);
-        for (uint256 i = 0; i < 3; i++) {
-            ThoughtCategory randomThoughtCat = ThoughtCategory(deterministicRandomResults[i] % 7);
-            uint256 randomThoughtIndex = player.birthunix % thoughts[uint(randomThoughtCat)].length;
-            _addPlayerMemory(_player,randomThoughtCat,randomThoughtIndex);
         }
     }
 
