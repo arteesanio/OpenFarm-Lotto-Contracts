@@ -49,7 +49,7 @@ contract TheOpenSimulation {
     // All relevant information regarding global stats of a player.
     struct State {
         // fun, energy, hygene, protein
-        // fun fixes boredom
+        // fun fixes fun
         // rest fixes energy
         // shower fixes hygene
         // food fixes protein
@@ -188,15 +188,22 @@ contract TheOpenSimulation {
         } else if (player.memories[_memIndex].isStatusStateDependant < 42) { // state dependant
 
         }
-        //  else { // both dependant
+        else { // both dependant
         //     // always for now
-        //     if (player.status._focus[0] > )
-        //     {
-        //     
-        //     }
-        //     fufilled = true;
-        // }
-        // player.memories[_memIndex].isWish = fufilled;
+            if (player.status._focus[0] > 123) {}
+            if (player.status._focus[1] > 123) {}
+            if (player.status._process[0] > 123) {}
+            if (player.status._process[1] > 123) {}
+            if (player.status._action[0] > 123) {}
+            if (player.status._action[1] > 123) {}
+
+            if (player.globalState.fun > 123) {}
+            if (player.globalState.energy > 123) {}
+            if (player.globalState.hygene > 123) {}
+            if (player.globalState.protein > 123) {}
+            fufilled = true;
+        }
+        player.memories[_memIndex].isWish = fufilled;
     }
     function _addPlayerWish(address _player, _ThoughtCategory _thotCat, uint256 _thotIndex) internal
     {
