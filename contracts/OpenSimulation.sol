@@ -183,7 +183,7 @@ contract TheOpenSimulation {
         _addThought(Thought(0, 0, "Sports Memory", block.timestamp, ThoughtCategory.sports));
     }
 
-    function _addThought(Thought memory _thot) public graduatedPlayerOnly(msg.sender) {
+    function _addThought(Thought memory _thot) internal {
         collectiveThoughtIndex++;
         thoughts[uint(_thot.cat)].push(Thought(collectiveThoughtIndex, thoughts[uint(_thot.cat)].length, _thot.title, _thot.birthunix, _thot.cat));
     }
