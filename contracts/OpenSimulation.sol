@@ -171,7 +171,7 @@ contract TheOpenSimulation {
         return player.globalState.energy;
     }
 
-    function fuillWish(uint256 _memIndex) public registeredOnly(msg.sender)
+    function fufillWish(uint256 _memIndex) public registeredOnly(msg.sender)
     {
         Player storage player = players[msg.sender];
         player.memories[_memIndex].isWish = false;
