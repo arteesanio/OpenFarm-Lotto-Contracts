@@ -49,7 +49,7 @@ describe('Simulation Contract', () => {
 
 			let addEnergyTx = await SIMULATION.connect(addr2).addPlayerEnergy(8)
 			let selectedPplayer = await SIMULATION.players(addr2.address)
-			console.log(selectedPplayer.status)
+			console.log(selectedPplayer.globalState)
 
 
 			let aPlayerMainWish = await SIMULATION.connect(addr2).getMyMemory(3) // first wish ?
@@ -67,8 +67,8 @@ describe('Simulation Contract', () => {
 			await SIMULATION.connect(addr2).addPlayerEnergy(255)
 
 			let selectedPplayer2 = await SIMULATION.players(addr2.address)
-			console.log(selectedPplayer2.status.energy)
-			console.log("selectedPplayer2.status.energy", selectedPplayer2.status.energy)
+			console.log(selectedPplayer2.globalState.energy)
+			console.log("selectedPplayer2.globalState.energy", selectedPplayer2.globalState.energy)
 
 
 

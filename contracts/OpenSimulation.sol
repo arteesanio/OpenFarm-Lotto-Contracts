@@ -195,6 +195,18 @@ contract TheOpenSimulation {
 
         player.status = Status([111,111],[111,111],[111,111]);
 
+        player.globalState = State(
+            // fun, energy, hygene, protein
+            1,1,3,5,
+
+            // position
+            [uint256(0),uint256(0),uint256(0)],
+            // rotation
+            [uint256(0),uint256(0),uint256(0)],
+            // scale
+            [uint256(0),uint256(0),uint256(0)]
+        );
+
         uint256[] memory deterministicRandomResults = expand(block.timestamp, 3);
         for (uint256 i = 0; i < 3; i++) {
             _ThoughtCategory randomThoughtCat = _ThoughtCategory(deterministicRandomResults[i] % 7);
