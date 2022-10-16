@@ -39,6 +39,7 @@ contract TheOpenSimulation {
         uint256 birthunix;
         _ThoughtCategory thoughtCat;
         uint256 thoughtIndex;
+        uint8 isStatusStateDependant;
         bool isWish;
     }
 
@@ -141,6 +142,7 @@ contract TheOpenSimulation {
             block.timestamp,
             _thotCat,
             _thotIndex,
+            840,
             false // isWish?
         ));
     }
@@ -169,6 +171,11 @@ contract TheOpenSimulation {
         return player.globalState.energy;
     }
 
+    function fuillWish(uint256 _memIndex) public registeredOnly(msg.sender)
+    {
+        Player storage player = players[msg.sender];
+        player.memories[_memIndex].isWish = false;
+    }
     function _addPlayerWish(address _player, _ThoughtCategory _thotCat, uint256 _thotIndex) internal
     {
         Player storage player = players[_player];
@@ -178,6 +185,7 @@ contract TheOpenSimulation {
             block.timestamp,
             _thotCat,
             _thotIndex,
+            840,
             true // isWish?
         ));
     }
