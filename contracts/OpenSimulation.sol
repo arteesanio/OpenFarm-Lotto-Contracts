@@ -147,6 +147,15 @@ contract TheOpenSimulation {
         thoughts[uint(_thot.cat)].push(Thought(collectiveThoughtIndex, thoughts[uint(_thot.cat)].length, _thot.title, _thot.birthunix, _thot.cat));
     }
 
+    function getMyLegacy() public view registeredOnly(msg.sender) returns (Memori[] memory)
+    {
+        return players[msg.sender].memories;
+    }
+    function getMyMemory(uint256 _memIndex) public view registeredOnly(msg.sender) returns (Memori memory)
+    {
+        Player storage player = players[msg.sender];
+        return player.memories[_memIndex];
+    }
     function _addPlayerMemory(address _player, ThoughtCategory _thotCat, uint256 _thotIndex) internal
     {
         Player storage player = players[_player];

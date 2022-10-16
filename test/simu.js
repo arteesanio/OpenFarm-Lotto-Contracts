@@ -21,9 +21,16 @@ describe('Simulation Contract', () => {
 		})
 		it('Should create player with and without ref', async () => {
 			let aTestPlayerResult = await SIMULATION._createTestPlayer(addr2.address)
-			
+
 			let aPlayerResult = await SIMULATION.connect(addr1).createPlayer(addr2.address,"myname")
 			let anOwner = await SIMULATION.connect(owner).createPlayer(SIMULATION.address,"owner")
+
+			let ownerPlayerMemory = await SIMULATION.connect(owner).getMyMemory(0)
+			console.log("\n\n",ownerPlayerMemory.thoughtCat)
+			console.log("\n\n",ownerPlayerMemory)
+			
+			let playerLegacy = await SIMULATION.connect(addr1).getMyLegacy()
+			console.log("\n\n",playerLegacy)
 		})
 	})
 })
