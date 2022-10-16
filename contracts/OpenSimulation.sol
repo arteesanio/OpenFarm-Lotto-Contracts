@@ -21,46 +21,11 @@ contract TheOpenSimulation {
         _ThoughtCategory cat;
     }
 
-    // All relevant information regarding a global state of a player.
+    // All relevant information regarding ethereal stats of a player.
     struct Status {
-        uint8 fun; uint8 energy; uint8 hygene; uint8 protein;
+        // pos - the etheral status of a player.
         uint8[2] _focus; uint8[2] _process; uint8[2] _action;
     }
-
-    // All relevant information regarding a global state of a player.
-    struct State {
-        // pos - the Position of the player.
-        // rot - the Rotation of the player.
-        // sca - the Scale of the player.
-        uint256[3] pos;
-        uint256[3] rot;
-        uint256[3] sca;
-    }
-
-    // All relevant information regarding a wish
-    struct Wish {
-        // id
-        // memCat - the Category of the memori.
-        // title - the title of the wish.
-        // birthunix - the UNIX timestamp when the first wish ocurred.
-
-        uint8 id;
-        uint8 memCat;
-        string title;
-        uint256 birthunix;
-    }
-
-    enum MemCats
-    {
-      ambition,
-      art,
-      hazards,
-      logic,
-      pets,
-      social,
-      sports,
-      supernatural
-     } 
 
     // All relevant information regarding a memori
     struct Memori {
@@ -77,15 +42,28 @@ contract TheOpenSimulation {
         bool isWish;
     }
 
+    // All relevant information regarding global stats of a player.
+    struct State {
+        // fun, energy, hygene, protein
+        // fun fixes boredom
+        // rest fixes energy
+        // shower fixes hygene
+        // food fixes protein
+        uint8 fun; uint8 energy; uint8 hygene; uint8 protein;
+        
+        // pos, rot, sca - the Position, Rotation and Scale of a player.
+        uint256[3] pos; uint256[3] rot; uint256[3] sca;
+    }
+
     // All relevant information regarding a player
     struct Player {
-        // URI - the player's name.
-        // name - the player's name.
-        // deadline - the UNIX timestamp when the player is expected to die.
+        // URI - a player's name.
+        // name - a player's name.
+        // deadline - the UNIX timestamp when a player is expected to die.
         // memories - the list of Memori items of a players life.
         // globalState - the position, rotation and scale of a player.
         // graduated - whether or not this player has achieved its life goal. Cannot be true before the deadline has been reached.
-        // ref - the player address that invited the next player.
+        // ref - a player address that invited the next player.
 
         string URI;
         string name;
@@ -99,27 +77,33 @@ contract TheOpenSimulation {
         address ref;
     }
 
+
+
     mapping(uint => Thought[]) public thoughts;
     uint public collectiveThoughtIndex;
 
     // Keep track of players by their address
     mapping(address => Player) public players;
 
-    // Only allows to be called by
+
+
+    // Only allows to be called by registered addresses
     modifier registeredOnly(address _player) {
         require(players[_player].birthunix != 0, "UNREGISTERED_PLAYER");
         _;
     }
+    // Only allows to be called by unregistered addresses
     modifier unregisteredOnly(address _player) {
         require(players[_player].birthunix == 0, "REGISTERED_PLAYER");
         _;
     }
+    // Only allows to be called by registered and alive addresses
     modifier alivePlayerOnly(address _player) {
         require(_player != address(0), "INVALID_PLAYER");
         require(address(this) == _player || (players[_player].birthunix != 0 && block.timestamp < players[_player].deadline), "DEAD_PLAYER");
         _;
     }
-    // Only allows to be called by
+    // Only allows to be called by registered and graduated addresses
     modifier graduatedPlayerOnly(address _player) {
         require(players[_player].graduated == true, "STUDENT_PLAYER");
         _;
@@ -165,11 +149,11 @@ contract TheOpenSimulation {
     {
         Player storage player = players[msg.sender];
         require(player.lastSave == 0 || block.timestamp > player.lastSave + 12 hours, "RECENT_ACTIVITY");
-        if (uint256(player.status.energy) + uint256(_amount) < 255)
+        if (uint256(player.globalState.energy) + uint256(_amount) < 255)
         {
-            player.status.energy += _amount;        
+            player.globalState.energy += _amount;        
         } else {
-            player.status.energy /= 2;
+            player.globalState.energy /= 2;
         }
         
 
@@ -182,7 +166,7 @@ contract TheOpenSimulation {
         uint256 randomThoughtIndex = (player.birthunix + block.timestamp) % thoughts[uint(randomThoughtCat)].length;
 
         _addPlayerWish(msg.sender, randomThoughtCat, randomThoughtIndex);
-        return player.status.energy;
+        return player.globalState.energy;
     }
 
     function _addPlayerWish(address _player, _ThoughtCategory _thotCat, uint256 _thotIndex) internal
@@ -209,7 +193,7 @@ contract TheOpenSimulation {
         player.birthunix = block.timestamp;
         player.deadline = block.timestamp + 21 days;
 
-        player.status = Status(1,1,2,3,[111,111],[111,111],[111,111]);
+        player.status = Status([111,111],[111,111],[111,111]);
 
         uint256[] memory deterministicRandomResults = expand(block.timestamp, 3);
         for (uint256 i = 0; i < 3; i++) {
