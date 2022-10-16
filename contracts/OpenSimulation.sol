@@ -3,45 +3,6 @@ pragma solidity ^0.8.4;
 
 contract TheOpenSimulation {
 
-
-
-
-
-
-
-
-
-    struct People {
-        uint peopleId;
-        string country;
-        string state;
-        uint[] personIds;
-    }
-
-    mapping(address => People[]) private people;
-
-    function addPeople(
-        uint _peopleId,
-        string memory _country,
-        string memory _state,
-        uint[] calldata _personIds
-    ) public {
-        people[msg.sender].push(People(_peopleId, _country, _state, _personIds));
-    }
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
     enum ThoughtCategory {
         supernatural,
         ambition,
@@ -61,10 +22,10 @@ contract TheOpenSimulation {
     }
 
     // All relevant information regarding a global state of a player.
-    struct Feeling {
-        uint256[3] pos;
-        uint256[3] rot;
-        uint256[3] sca;
+    struct Status {
+        uint256[2] focus;
+        uint256[2] process;
+        uint256[2] action;
     }
 
     // All relevant information regarding a global state of a player.
@@ -121,7 +82,7 @@ contract TheOpenSimulation {
         // URI - the player's name.
         // name - the player's name.
         // deadline - the UNIX timestamp when the player is expected to die.
-        // memoriMap - the list of Memori items of a players life.
+        // memories - the list of Memori items of a players life.
         // globalState - the position, rotation and scale of a player.
         // graduated - whether or not this player has achieved its life goal. Cannot be true before the deadline has been reached.
         // ref - the player address that invited the next player.
@@ -132,8 +93,7 @@ contract TheOpenSimulation {
         uint256 deadline;
         Memori[] memories;
         State globalState;
-        Feeling status;
-        Feeling satisfaction;
+        Status status;
         bool graduated;
         address ref;
     }
@@ -155,7 +115,7 @@ contract TheOpenSimulation {
     }
     modifier alivePlayerOnly(address _player) {
         require(_player != address(0), "INVALID_PLAYER");
-        require(players[_player].birthunix != 0 && block.timestamp < players[_player].deadline, "DEAD_PLAYER");
+        require(address(this) == _player || (players[_player].birthunix != 0 && block.timestamp < players[_player].deadline), "DEAD_PLAYER");
         _;
     }
     // Only allows to be called by
@@ -166,12 +126,11 @@ contract TheOpenSimulation {
 
 
     constructor () {
-        Player storage player = players[address(0)];
+        Player storage player = players[address(this)];
         player.ref = msg.sender;
         
         player.birthunix = block.timestamp;
         player.deadline = block.timestamp + 42 days;
-        player.graduated = true;
 
         _addThought(Thought(0, 0, "Supernatural Memory", block.timestamp, ThoughtCategory.supernatural));
         _addThought(Thought(0, 0, "Ambition Memory", block.timestamp, ThoughtCategory.ambition));
@@ -188,7 +147,7 @@ contract TheOpenSimulation {
         thoughts[uint(_thot.cat)].push(Thought(collectiveThoughtIndex, thoughts[uint(_thot.cat)].length, _thot.title, _thot.birthunix, _thot.cat));
     }
 
-    function _addPlayerMemory(address _player, ThoughtCategory _thotCat, uint256 _thotIndex) internal alivePlayerOnly(_player)
+    function _addPlayerMemory(address _player, ThoughtCategory _thotCat, uint256 _thotIndex) internal
     {
         Player storage player = players[_player];
         player.memories.push(Memori(
@@ -214,6 +173,21 @@ contract TheOpenSimulation {
         }
         
         player.name = _name;
+        player.birthunix = block.timestamp;
+        player.deadline = block.timestamp + 21 days;
+
+        uint256[] memory deterministicRandomResults = expand(player.birthunix, 3);
+        for (uint256 i = 0; i < 3; i++) {
+            ThoughtCategory randomThoughtCat = ThoughtCategory(deterministicRandomResults[i] % 7);
+            uint256 randomThoughtIndex = player.birthunix % thoughts[uint(randomThoughtCat)].length;
+            _addPlayerMemory(msg.sender,randomThoughtCat,randomThoughtIndex);
+        }
+    }
+
+    function _createTestPlayer(address _player) external unregisteredOnly(_player)
+    {
+        Player storage player = players[_player];
+        player.name = "test";
         player.birthunix = block.timestamp;
         player.deadline = block.timestamp + 21 days;
 

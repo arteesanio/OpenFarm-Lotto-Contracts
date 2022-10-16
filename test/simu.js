@@ -16,5 +16,14 @@ describe('Simulation Contract', () => {
 			console.log("supernaturalThoughtItem", supernaturalThoughtItem)
 			expect(supernaturalThoughtItem.id).to.equal(0)
 		})
+		it('Should create player', async () => {
+			let aTestPlayerResult = await SIMULATION._createTestPlayer(addr2.address)
+		})
+		it('Should create player with and without ref', async () => {
+			let aTestPlayerResult = await SIMULATION._createTestPlayer(addr2.address)
+			
+			let aPlayerResult = await SIMULATION.connect(addr1).createPlayer(addr2.address,"myname")
+			let anOwner = await SIMULATION.connect(owner).createPlayer(SIMULATION.address,"owner")
+		})
 	})
 })
