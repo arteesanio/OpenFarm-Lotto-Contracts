@@ -142,7 +142,7 @@ contract TheOpenSimulation {
             block.timestamp,
             _thotCat,
             _thotIndex,
-            840,
+            55,
             false // isWish?
         ));
     }
@@ -171,9 +171,19 @@ contract TheOpenSimulation {
         return player.globalState.energy;
     }
 
-    function fufillWish(uint256 _memIndex) public registeredOnly(msg.sender)
+    function fufillWish(uint256 _memIndex, _ThoughtCategory _thotCat) public registeredOnly(msg.sender)
     {
         Player storage player = players[msg.sender];
+        require(player.memories[_memIndex].thoughtCat == _thotCat, "INVALID_CATEGORY");
+
+        if (player.memories[_memIndex].isStatusStateDependant < 21)// status dependant
+        {
+
+        } else if (player.memories[_memIndex].isStatusStateDependant < 42) { // state dependant
+
+        } else { // both dependant
+
+        }
         player.memories[_memIndex].isWish = false;
     }
     function _addPlayerWish(address _player, _ThoughtCategory _thotCat, uint256 _thotIndex) internal
@@ -185,7 +195,7 @@ contract TheOpenSimulation {
             block.timestamp,
             _thotCat,
             _thotIndex,
-            840,
+            55,
             true // isWish?
         ));
     }
