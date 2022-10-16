@@ -195,7 +195,7 @@ contract TheOpenSimulation {
         for (uint256 i = 0; i < 3; i++) {
             ThoughtCategory randomThoughtCat = ThoughtCategory(deterministicRandomResults[i] % 7);
             uint256 randomThoughtIndex = player.birthunix % thoughts[uint(randomThoughtCat)].length;
-            _addPlayerMemory(msg.sender,randomThoughtCat,randomThoughtIndex);
+            _addPlayerMemory(_player,randomThoughtCat,randomThoughtIndex);
         }
     }
 
