@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "hardhat/console.sol";
+
 contract TheOpenSimulation {
 
     enum ThoughtCategory {
@@ -23,9 +25,13 @@ contract TheOpenSimulation {
 
     // All relevant information regarding a global state of a player.
     struct Status {
-        uint256[2] focus;
-        uint256[2] process;
-        uint256[2] action;
+        uint8 fun;
+        uint8 energy;
+        uint8 hygene;
+        uint8 protein;
+        uint8[2] _focus;
+        uint8[2] _process;
+        uint8[2] _action;
     }
 
     // All relevant information regarding a global state of a player.
@@ -75,6 +81,7 @@ contract TheOpenSimulation {
         uint256 birthunix;
         ThoughtCategory thoughtCat;
         uint256 thoughtIndex;
+        bool isWish;
     }
 
     // All relevant information regarding a player
@@ -147,15 +154,6 @@ contract TheOpenSimulation {
         thoughts[uint(_thot.cat)].push(Thought(collectiveThoughtIndex, thoughts[uint(_thot.cat)].length, _thot.title, _thot.birthunix, _thot.cat));
     }
 
-    function getMyLegacy() public view registeredOnly(msg.sender) returns (Memori[] memory)
-    {
-        return players[msg.sender].memories;
-    }
-    function getMyMemory(uint256 _memIndex) public view registeredOnly(msg.sender) returns (Memori memory)
-    {
-        Player storage player = players[msg.sender];
-        return player.memories[_memIndex];
-    }
     function _addPlayerMemory(address _player, ThoughtCategory _thotCat, uint256 _thotIndex) internal
     {
         Player storage player = players[_player];
@@ -164,14 +162,39 @@ contract TheOpenSimulation {
             thoughts[uint(_thotCat)][_thotIndex].title,
             block.timestamp,
             _thotCat,
-            _thotIndex
+            _thotIndex,
+            false // isWish?
         ));
+    }
 
-        // uint256 id;
-        // string title;
-        // uint256 birthunix;
-        // ThoughtCategory thoughtCat;
-        // uint256 thoughtIndex;
+    function addPlayerEnergy(uint8 _amount) public alivePlayerOnly(msg.sender) returns (uint8)
+    {
+        Player storage player = players[msg.sender];
+        player.status.energy += _amount;
+
+        // deterministic random category based on block timestamp,
+        // so all players that fetch at the same time, get the same category
+        ThoughtCategory randomThoughtCat = ThoughtCategory(block.timestamp % 7);
+
+        // deterministic random category based on block timestamp + player birth,
+        // so all players that fetch at the same time with same birth, get the same wish
+        uint256 randomThoughtIndex = (player.birthunix + block.timestamp) % thoughts[uint(randomThoughtCat)].length;
+
+        _addPlayerWish(msg.sender, randomThoughtCat, randomThoughtIndex);
+        return player.status.energy;
+    }
+
+    function _addPlayerWish(address _player, ThoughtCategory _thotCat, uint256 _thotIndex) internal
+    {
+        Player storage player = players[_player];
+        player.memories.push(Memori(
+            player.memories.length,
+            thoughts[uint(_thotCat)][_thotIndex].title,
+            block.timestamp,
+            _thotCat,
+            _thotIndex,
+            true // isWish?
+        ));
     }
 
     function createPlayer(address _ref, string memory _name) external unregisteredOnly(msg.sender) alivePlayerOnly(_ref)
@@ -184,6 +207,8 @@ contract TheOpenSimulation {
         player.name = _name;
         player.birthunix = block.timestamp;
         player.deadline = block.timestamp + 21 days;
+
+        player.status = Status(7,7,7,7,[111,111],[111,111],[111,111]);
 
         uint256[] memory deterministicRandomResults = expand(player.birthunix, 3);
         for (uint256 i = 0; i < 3; i++) {
@@ -238,5 +263,15 @@ contract TheOpenSimulation {
             expandedValues[i] = uint256(keccak256(abi.encode(randomValue, i)));
         }
         return expandedValues;
+    }
+
+    function getMyLegacy() public view registeredOnly(msg.sender) returns (Memori[] memory)
+    {
+        return players[msg.sender].memories;
+    }
+    function getMyMemory(uint256 _memIndex) public view registeredOnly(msg.sender) returns (Memori memory)
+    {
+        Player storage player = players[msg.sender];
+        return player.memories[_memIndex];
     }
 }
