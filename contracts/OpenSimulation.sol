@@ -182,26 +182,26 @@ contract TheOpenSimulation {
 
         bool fufilled = false;
 
-        if (player.memories[_memIndex].isStatusStateDependant < 21)// status dependant
+        // if (player.memories[_memIndex].isStatusStateDependant >= 42) { // both dependant
+        
+        // status dependant or both dependent
+        if (player.memories[_memIndex].isStatusStateDependant < 21 || player.memories[_memIndex].isStatusStateDependant >= 42)
         {
-
-        } else if (player.memories[_memIndex].isStatusStateDependant < 42) { // state dependant
-
+            if (player.status._focus[0] < 123) { fufilled = false; }
+            if (player.status._focus[1] < 123) { fufilled = false; }
+            if (player.status._process[0] < 123) { fufilled = false; }
+            if (player.status._process[1] < 123) { fufilled = false; }
+            if (player.status._action[0] < 123) { fufilled = false; }
+            if (player.status._action[1] < 123) { fufilled = false; }
         }
-        else { // both dependant
-        //     // always for now
-            if (player.status._focus[0] > 123) {}
-            if (player.status._focus[1] > 123) {}
-            if (player.status._process[0] > 123) {}
-            if (player.status._process[1] > 123) {}
-            if (player.status._action[0] > 123) {}
-            if (player.status._action[1] > 123) {}
 
-            if (player.globalState.fun > 123) {}
-            if (player.globalState.energy > 123) {}
-            if (player.globalState.hygene > 123) {}
-            if (player.globalState.protein > 123) {}
-            fufilled = true;
+        // state or both dependant
+        if (player.memories[_memIndex].isStatusStateDependant >= 21)
+        {
+            if (player.globalState.fun < 123) { fufilled = false; }
+            if (player.globalState.energy < 123) { fufilled = false; }
+            if (player.globalState.hygene < 123) { fufilled = false; }
+            if (player.globalState.protein < 123) { fufilled = false; }
         }
         player.memories[_memIndex].isWish = fufilled;
     }
