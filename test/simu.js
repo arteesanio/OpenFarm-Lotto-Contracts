@@ -26,16 +26,16 @@ describe('Simulation Contract', () => {
 			)
 			console.log(ownerPlayerMemory.birthunix.toString(),"\n\n\n")
 		})
-		it('Should create player with and without ref', async () => {
+		it('Should create player with reference', async () => {
 			let anOwner = await SIMULATION.connect(owner).createPlayer(SIMULATION.address,"owner")
 			let aPlayerResult = await SIMULATION.connect(addr1).createPlayer(owner.address,"myname")
 
 			let playerLegacy = await SIMULATION.connect(addr1).getMyLegacy()
 			playerLegacy.map((item, index) => {
 				console.table({
-					"memory#": index,
+					"interest | memory #": index,
 					cat: THOUGHT_CATEGORY_LIST[item.thoughtCat],
-					birth: item.birthunix.toString(),
+					birth: new Date(Date(item.birthunix.toString())).toLocaleDateString(),
 				})	
 			})
 		})
@@ -63,14 +63,19 @@ describe('Simulation Contract', () => {
 						// suppose the current block has a timestamp of 01:00 PM
 			await network.provider.send("evm_increaseTime", [3600*16])
 			await network.provider.send("evm_mine") // this one will have 02:00 PM as its timestamp
-			console.log("*** advance time *** ")
-			SIMULATION.connect(addr2).addPlayerEnergy(8)
+			console.log("*** advance time *** | (sinning energy) ")
+			await SIMULATION.connect(addr2).addPlayerEnergy(255)
 
-			let aPlayerRegularWish = await SIMULATION.connect(addr2).getMyMemory(4) // second wish ?
-			console.log(
-				"player 2 | regular wish:", THOUGHT_CATEGORY_LIST[aPlayerRegularWish.thoughtCat]
-			)
-			console.log(aPlayerRegularWish.birthunix.toString(),"\n\n\n")
+			let selectedPplayer2 = await SIMULATION.players(addr2.address)
+			console.log(selectedPplayer2.status.energy)
+			console.log("selectedPplayer2.status.energy", selectedPplayer2.status.energy)
+
+
+
+			// let aPlayerRegularWish = await SIMULATION.connect(addr2).getMyMemory(4) // second wish ?
+			// console.log(
+			// 	"player 2 | regular wish:", THOUGHT_CATEGORY_LIST[aPlayerRegularWish.thoughtCat]
+			// )
 
 		})
 	})

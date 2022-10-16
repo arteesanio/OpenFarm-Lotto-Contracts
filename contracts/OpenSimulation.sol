@@ -172,7 +172,13 @@ contract TheOpenSimulation {
     {
         Player storage player = players[msg.sender];
         require(player.lastSave == 0 || block.timestamp > player.lastSave + 12 hours, "RECENT_ACTIVITY");
-        player.status.energy += _amount;
+        if (uint256(player.status.energy) + uint256(_amount) < 255)
+        {
+            player.status.energy += _amount;        
+        } else {
+            player.status.energy = 0;
+        }
+        
 
         // deterministic random category based on block timestamp,
         // so all players that fetch at the same time, get the same category
