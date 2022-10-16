@@ -52,14 +52,26 @@ describe('Simulation Contract', () => {
 			console.log(selectedPplayer.status)
 
 
-			let aPlayerWish = await SIMULATION.connect(addr2).getMyMemory(3) // first wish ?
+			let aPlayerMainWish = await SIMULATION.connect(addr2).getMyMemory(3) // first wish ?
 			console.log(
-				"player 2 | main wish:", THOUGHT_CATEGORY_LIST[aPlayerWish.thoughtCat]
+				"player 2 | main wish:", THOUGHT_CATEGORY_LIST[aPlayerMainWish.thoughtCat]
 			)
-			console.log(aPlayerWish.birthunix.toString(),"\n\n\n")
+			console.log(aPlayerMainWish.birthunix.toString(),"\n\n\n")
 
 			// should fail
-			await expect(SIMULATION.connect(addr2).addPlayerEnergy(8)).to.be.reverted
+			// await expect(SIMULATION.connect(addr2).addPlayerEnergy(8)).to.be.reverted
+						// suppose the current block has a timestamp of 01:00 PM
+			await network.provider.send("evm_increaseTime", [3600*16])
+			await network.provider.send("evm_mine") // this one will have 02:00 PM as its timestamp
+			console.log("*** advance time *** ")
+			SIMULATION.connect(addr2).addPlayerEnergy(8)
+
+			let aPlayerRegularWish = await SIMULATION.connect(addr2).getMyMemory(4) // second wish ?
+			console.log(
+				"player 2 | regular wish:", THOUGHT_CATEGORY_LIST[aPlayerRegularWish.thoughtCat]
+			)
+			console.log(aPlayerRegularWish.birthunix.toString(),"\n\n\n")
+
 		})
 	})
 })

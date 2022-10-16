@@ -210,7 +210,7 @@ contract TheOpenSimulation {
         player.birthunix = block.timestamp;
         player.deadline = block.timestamp + 21 days;
 
-        player.status = Status(7,7,7,7,[111,111],[111,111],[111,111]);
+        player.status = Status(1,1,2,3,[111,111],[111,111],[111,111]);
 
         uint256[] memory deterministicRandomResults = expand(block.timestamp, 3);
         for (uint256 i = 0; i < 3; i++) {
