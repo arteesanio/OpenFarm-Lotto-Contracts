@@ -145,7 +145,7 @@ contract TheOpenSimulation {
             block.timestamp,
             _thotCat,
             _thotIndex,
-            55,
+            uint8(block.timestamp % 255),
             false, // isWish?
             [uint256(0),uint256(0),uint256(0)],[uint256(0),uint256(0),uint256(0)],[uint256(0),uint256(0),uint256(0)]
         ));
@@ -182,10 +182,10 @@ contract TheOpenSimulation {
 
         bool fufilled = false;
 
-        // if (player.memories[_memIndex].isStatusStateDependant >= 42) { // both dependant
-        
+        // if (player.memories[_memIndex].isStatusStateDependant >= 255) { // both dependant
+
         // status dependant or both dependent
-        if (player.memories[_memIndex].isStatusStateDependant < 21 || player.memories[_memIndex].isStatusStateDependant >= 42)
+        if (player.memories[_memIndex].isStatusStateDependant < 123 || player.memories[_memIndex].isStatusStateDependant >= 255)
         {
             if (player.status._focus[0] < 123) { fufilled = false; }
             if (player.status._focus[1] < 123) { fufilled = false; }
@@ -196,7 +196,7 @@ contract TheOpenSimulation {
         }
 
         // state or both dependant
-        if (player.memories[_memIndex].isStatusStateDependant >= 21)
+        if (player.memories[_memIndex].isStatusStateDependant >= 123)
         {
             if (player.globalState.fun < 123) { fufilled = false; }
             if (player.globalState.energy < 123) { fufilled = false; }
@@ -215,7 +215,7 @@ contract TheOpenSimulation {
             block.timestamp,
             _thotCat,
             _thotIndex,
-            55,
+            uint8(block.timestamp % 255),
             true, // isWish?
 
             [uint256(0),uint256(0),uint256(0)],[uint256(0),uint256(0),uint256(0)],[uint256(0),uint256(0),uint256(0)]
