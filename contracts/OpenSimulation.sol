@@ -41,6 +41,9 @@ contract TheOpenSimulation {
         uint256 thoughtIndex;
         uint8 isStatusStateDependant;
         bool isWish;
+
+        // uint256[3] goalFoc; uint256[3] goalPro; uint256[3] goalAct;
+        uint256[3] goalPos; uint256[3] goalRot; uint256[3] goalSca;
     }
 
     // All relevant information regarding global stats of a player.
@@ -143,7 +146,8 @@ contract TheOpenSimulation {
             _thotCat,
             _thotIndex,
             55,
-            false // isWish?
+            false, // isWish?
+            [uint256(0),uint256(0),uint256(0)],[uint256(0),uint256(0),uint256(0)],[uint256(0),uint256(0),uint256(0)]
         ));
     }
 
@@ -189,6 +193,7 @@ contract TheOpenSimulation {
     function _addPlayerWish(address _player, _ThoughtCategory _thotCat, uint256 _thotIndex) internal
     {
         Player storage player = players[_player];
+        
         player.memories.push(Memori(
             player.memories.length,
             thoughts[uint(_thotCat)][_thotIndex].title,
@@ -196,7 +201,9 @@ contract TheOpenSimulation {
             _thotCat,
             _thotIndex,
             55,
-            true // isWish?
+            true, // isWish?
+
+            [uint256(0),uint256(0),uint256(0)],[uint256(0),uint256(0),uint256(0)],[uint256(0),uint256(0),uint256(0)]
         ));
     }
 
