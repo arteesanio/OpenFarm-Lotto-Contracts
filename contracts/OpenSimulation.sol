@@ -180,15 +180,23 @@ contract TheOpenSimulation {
         Player storage player = players[msg.sender];
         require(player.memories[_memIndex].thoughtCat == _thotCat, "INVALID_CATEGORY");
 
+        bool fufilled = false;
+
         if (player.memories[_memIndex].isStatusStateDependant < 21)// status dependant
         {
 
         } else if (player.memories[_memIndex].isStatusStateDependant < 42) { // state dependant
 
-        } else { // both dependant
-
         }
-        player.memories[_memIndex].isWish = false;
+        //  else { // both dependant
+        //     // always for now
+        //     if (player.status._focus[0] > )
+        //     {
+        //     
+        //     }
+        //     fufilled = true;
+        // }
+        // player.memories[_memIndex].isWish = fufilled;
     }
     function _addPlayerWish(address _player, _ThoughtCategory _thotCat, uint256 _thotIndex) internal
     {
