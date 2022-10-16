@@ -187,21 +187,21 @@ contract TheOpenSimulation {
         // status dependant or both dependent
         if (player.memories[_memIndex].isStatusStateDependant < 123 || player.memories[_memIndex].isStatusStateDependant >= 255)
         {
-            if (player.status._focus[0] < 123) { fufilled = false; }
-            if (player.status._focus[1] < 123) { fufilled = false; }
-            if (player.status._process[0] < 123) { fufilled = false; }
-            if (player.status._process[1] < 123) { fufilled = false; }
-            if (player.status._action[0] < 123) { fufilled = false; }
-            if (player.status._action[1] < 123) { fufilled = false; }
+            if (player.status._focus[0] >= 123) { fufilled = true; }
+            if (player.status._focus[1] >= 123) { fufilled = true; }
+            if (player.status._process[0] >= 123) { fufilled = true; }
+            if (player.status._process[1] >= 123) { fufilled = true; }
+            if (player.status._action[0] >= 123) { fufilled = true; }
+            if (player.status._action[1] >= 123) { fufilled = true; }
         }
 
         // state or both dependant
         if (player.memories[_memIndex].isStatusStateDependant >= 123)
         {
-            if (player.globalState.fun < 123) { fufilled = false; }
-            if (player.globalState.energy < 123) { fufilled = false; }
-            if (player.globalState.hygene < 123) { fufilled = false; }
-            if (player.globalState.protein < 123) { fufilled = false; }
+            if (player.globalState.fun >= 123) { fufilled = true; }
+            if (player.globalState.energy >= 123) { fufilled = true; }
+            if (player.globalState.hygene >= 123) { fufilled = true; }
+            if (player.globalState.protein >= 123) { fufilled = true; }
         }
         player.memories[_memIndex].isWish = fufilled;
     }

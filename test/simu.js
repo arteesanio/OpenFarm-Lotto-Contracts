@@ -54,7 +54,8 @@ describe('Simulation Contract', () => {
 
 			let aPlayerMainWish = await SIMULATION.connect(addr2).getMyMemory(3) // first wish ?
 			console.log(
-				"player 2 | main wish:", THOUGHT_CATEGORY_LIST[aPlayerMainWish.thoughtCat]
+				"player 2 | main wish:", THOUGHT_CATEGORY_LIST[aPlayerMainWish.thoughtCat],
+				"wish:", aPlayerMainWish.isStatusStateDependant,
 			)
 			console.log(aPlayerMainWish.birthunix.toString(),"\n\n\n")
 
@@ -72,10 +73,10 @@ describe('Simulation Contract', () => {
 
 
 
-			// let aPlayerRegularWish = await SIMULATION.connect(addr2).getMyMemory(4) // second wish ?
-			// console.log(
-			// 	"player 2 | regular wish:", THOUGHT_CATEGORY_LIST[aPlayerRegularWish.thoughtCat]
-			// )
+			let aPlayerRegularWish = await SIMULATION.connect(addr2).getMyMemory(4) // second wish ?
+			console.log(
+				"player 2 | regular wish:", THOUGHT_CATEGORY_LIST[aPlayerRegularWish.thoughtCat]
+			)
 
 		})
 	})
