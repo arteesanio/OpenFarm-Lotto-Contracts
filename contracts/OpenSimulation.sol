@@ -158,7 +158,7 @@ contract TheOpenSimulation {
     {
         Player storage forgottenPlayer = players[_forgottenPlayer];
         require(forgottenPlayer.lastSave > 0, "UNUSED_PLAYER");
-        require(block.timestamp > forgottenPlayer.lastSave + 48 hours, "RECENT_ACTIVITY");
+        require(block.timestamp > forgottenPlayer.lastSave + 48 hours, "NOT_FORGOTTEN");
 
         forgottenPlayer.globalState.energy /= 2;
         forgottenPlayer.globalState.fun /= 2;
@@ -219,6 +219,8 @@ contract TheOpenSimulation {
         uint256 randomThoughtIndex = (player.birthunix + block.timestamp) % thoughts[uint(randomThoughtCat)].length;
 
         _addPlayerWish(msg.sender, randomThoughtCat, randomThoughtIndex);
+
+        player.lastSave = block.timestamp;
     }
 
     function fufillWish(uint256 _memIndex) public registeredOnly(msg.sender)

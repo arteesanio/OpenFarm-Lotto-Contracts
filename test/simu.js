@@ -93,7 +93,7 @@ describe('Simulation Contract', () => {
 			{
 				let aPlayerMainWish = await SIMULATION.connect(addr2).getMyMemory(3) // first wish ?
 				console.log(
-					"player 2 | wish:", THOUGHT_CATEGORY_LIST[aPlayerMainWish.thoughtCat],
+					"player 2 | wish to fufill:", THOUGHT_CATEGORY_LIST[aPlayerMainWish.thoughtCat],
 					"\nisStatusStateDependant:", aPlayerMainWish.isStatusStateDependant,
 					"\nisWish:", aPlayerMainWish.isWish,
 				)
@@ -110,7 +110,7 @@ describe('Simulation Contract', () => {
 			{
 				let aPlayerMainWish = await SIMULATION.connect(addr2).getMyMemory(3) // first wish ?
 				console.log(
-					"\n\n\nplayer 2 | wish:", THOUGHT_CATEGORY_LIST[aPlayerMainWish.thoughtCat],
+					"\n\n\nplayer 2 | fufilled wish:", THOUGHT_CATEGORY_LIST[aPlayerMainWish.thoughtCat],
 					"\nisStatusStateDependant:", aPlayerMainWish.isStatusStateDependant,
 					"\nisWish:", aPlayerMainWish.isWish,
 				)
@@ -124,6 +124,32 @@ describe('Simulation Contract', () => {
 			}
 
 
+		})
+		it('Should steal energy', async () => {
+			console.log("\n\n\n\n*** Should steal energy ****")
+			let aPlayerResult1 = await SIMULATION.connect(addr1).createPlayer(SIMULATION.address,"player 1")
+			let aPlayerResult2 = await SIMULATION.connect(addr2).createPlayer(SIMULATION.address,"player 2")
+
+			let oldEnergy = await SIMULATION.players(addr1.address)
+			console.table({
+				energy: oldEnergy.globalState.energy,
+				fun: oldEnergy.globalState.fun,
+				hygene: oldEnergy.globalState.hygene,
+				protein: oldEnergy.globalState.protein,
+			})
+
+			let addEnergyTx = await SIMULATION.connect(addr2).addPlayerEnergy(208,208,208,208)
+			await network.provider.send("evm_increaseTime", [3600*50])
+			await network.provider.send("evm_mine") // this one will have 02:00 PM as its timestamp
+			let stealEnergyTx = await SIMULATION.connect(addr1).stealPlayerEnergy(addr2.address)
+
+			let newEnergy = await SIMULATION.players(addr1.address)
+			console.table({
+				energy: newEnergy.globalState.energy,
+				fun: newEnergy.globalState.fun,
+				hygene: newEnergy.globalState.hygene,
+				protein: newEnergy.globalState.protein,
+			})
 		})
 
 
