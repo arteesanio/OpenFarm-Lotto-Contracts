@@ -88,6 +88,7 @@ describe('Simulation Contract', () => {
 		it('Should fufill wish', async () => {
 			let aPlayerResult = await SIMULATION.connect(addr2).createPlayer(SIMULATION.address,"player 2")
 			let addEnergyTx = await SIMULATION.connect(addr2).addPlayerEnergy(208,208,208,208)
+
 			{
 				let aPlayerMainWish = await SIMULATION.connect(addr2).getMyMemory(3) // first wish ?
 				console.log(
@@ -96,9 +97,8 @@ describe('Simulation Contract', () => {
 					"\nisWish:", aPlayerMainWish.isWish,
 				)
 				// console.log(aPlayerMainWish.birthunix.toString(),"\n\n\n")
-				let aPlayerFufillWish = await SIMULATION.connect(addr2).fufillWish(3) // first wish ?
 			}
-
+			let aPlayerFufillWish = await SIMULATION.connect(addr2).fufillWish(3) // first wish ?
 			{
 				let aPlayerMainWish = await SIMULATION.connect(addr2).getMyMemory(3) // first wish ?
 				console.log(
@@ -107,6 +107,11 @@ describe('Simulation Contract', () => {
 					"\nisWish:", aPlayerMainWish.isWish,
 				)
 			}
+
+			let selectedPplayer2 = await SIMULATION.players(addr2.address)
+			console.table({
+				wishCount: selectedPplayer2.wishCount.toString(),
+			})
 
 
 		})

@@ -73,6 +73,7 @@ contract TheOpenSimulation {
         string name;
         uint256 birthunix;
         uint256 deadline;
+        uint256 wishCount;
         Memori[] memories;
         State globalState;
         Status status;
@@ -224,7 +225,9 @@ contract TheOpenSimulation {
             if (player.globalState.hygene >= 123) { nowIsWish = false; }
             if (player.globalState.protein >= 123) { nowIsWish = false; }
         }
+        require (nowIsWish == false, "NOT_ENOUGH_STAT");
         player.memories[_memIndex].isWish = nowIsWish;
+        player.wishCount++;
     }
     function _addPlayerWish(address _player, _ThoughtCategory _thotCat, uint256 _thotIndex) internal
     {
