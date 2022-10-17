@@ -213,7 +213,17 @@ contract TheOpenSimulation {
         // focus[0] | focus on senses is inversly proportional to the fun of a player 
         // focus[1] | focus force is directly proportional to the energy of a player 
         player.status._focus[0] = 255-player.globalState.fun;        
-        player.status._focus[1] = player.globalState.energy;        
+        player.status._focus[1] = player.globalState.energy;
+
+        // process[0] | process with logic is inversly proportional to the protein of a player 
+        // process[1] | process force is directly proportional to the energy of a player 
+        player.status._process[0] = 255-player.globalState.protein;        
+        player.status._process[1] = player.globalState.energy;
+
+        // action[0] | action to the outer world is inversly proportional to the hygene of a player 
+        // action[1] | action force is directly proportional to the protein of a player 
+        player.status._action[0] = 255-player.globalState.hygene;        
+        player.status._action[1] = player.globalState.protein;        
         
 
         // deterministic random category based on block timestamp,
@@ -243,11 +253,11 @@ contract TheOpenSimulation {
         if (player.memories[_memIndex].isStatusStateDependant < 123 || player.memories[_memIndex].isStatusStateDependant >= 255)
         {
             require (player.status._focus[0] >= 123, "NOT_ENOUGH_STAT status._focus");
-            require (player.status._focus[1] >= 123, "NOT_ENOUGH_STAT status._focus");
+            require (player.status._focus[1] >= 123, "NOT_ENOUGH_STAT status._focus force");
             require (player.status._process[0] >= 123, "NOT_ENOUGH_STAT status._process");
-            require (player.status._process[1] >= 123, "NOT_ENOUGH_STAT status._process");
+            require (player.status._process[1] >= 123, "NOT_ENOUGH_STAT status._process force");
             require (player.status._action[0] >= 123, "NOT_ENOUGH_STAT status._action");
-            require (player.status._action[1] >= 123, "NOT_ENOUGH_STAT status._action");
+            require (player.status._action[1] >= 123, "NOT_ENOUGH_STAT status._action force");
             nowIsWish = false;
         }
 
