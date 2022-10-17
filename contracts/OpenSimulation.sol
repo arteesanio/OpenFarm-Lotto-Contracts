@@ -151,15 +151,35 @@ contract TheOpenSimulation {
         ));
     }
 
-    function addPlayerEnergy(uint8 _amount) public alivePlayerOnly(msg.sender) returns (uint8)
+    // fun, energy, hygene, protein
+    function addPlayerEnergy(uint8 _energy, uint8 _fun, uint8 _hygene, uint8 _protein)
+        public alivePlayerOnly(msg.sender) returns (uint8)
     {
         Player storage player = players[msg.sender];
         require(player.lastSave == 0 || block.timestamp > player.lastSave + 12 hours, "RECENT_ACTIVITY");
-        if (uint256(player.globalState.energy) + uint256(_amount) < 255)
+        if (uint256(player.globalState.energy) + uint256(_energy) < 255)
         {
-            player.globalState.energy += _amount;        
+            player.globalState.energy += _energy;        
         } else {
             player.globalState.energy /= 2;
+        }
+        if (uint256(player.globalState.fun) + uint256(_fun) < 255)
+        {
+            player.globalState.fun += _fun;        
+        } else {
+            player.globalState.fun /= 2;
+        }
+        if (uint256(player.globalState.hygene) + uint256(_hygene) < 255)
+        {
+            player.globalState.hygene += _hygene;        
+        } else {
+            player.globalState.hygene /= 2;
+        }
+        if (uint256(player.globalState.protein) + uint256(_protein) < 255)
+        {
+            player.globalState.protein += _protein;        
+        } else {
+            player.globalState.protein /= 2;
         }
         
 
@@ -175,35 +195,36 @@ contract TheOpenSimulation {
         return player.globalState.energy;
     }
 
-    function fufillWish(uint256 _memIndex, _ThoughtCategory _thotCat) public registeredOnly(msg.sender)
+    function fufillWish(uint256 _memIndex) public registeredOnly(msg.sender)
     {
         Player storage player = players[msg.sender];
-        require(player.memories[_memIndex].thoughtCat == _thotCat, "INVALID_CATEGORY");
+        // require(player.memories[_memIndex].thoughtCat == _thotCat, "INVALID_CATEGORY");
+        require(player.memories[_memIndex].isWish == true, "IS_NOT_WISH");
 
-        bool fufilled = false;
+        bool nowIsWish = true;
 
         // if (player.memories[_memIndex].isStatusStateDependant >= 255) { // both dependant
 
         // status dependant or both dependent
         if (player.memories[_memIndex].isStatusStateDependant < 123 || player.memories[_memIndex].isStatusStateDependant >= 255)
         {
-            if (player.status._focus[0] >= 123) { fufilled = true; }
-            if (player.status._focus[1] >= 123) { fufilled = true; }
-            if (player.status._process[0] >= 123) { fufilled = true; }
-            if (player.status._process[1] >= 123) { fufilled = true; }
-            if (player.status._action[0] >= 123) { fufilled = true; }
-            if (player.status._action[1] >= 123) { fufilled = true; }
+            if (player.status._focus[0] >= 123) { nowIsWish = false; }
+            if (player.status._focus[1] >= 123) { nowIsWish = false; }
+            if (player.status._process[0] >= 123) { nowIsWish = false; }
+            if (player.status._process[1] >= 123) { nowIsWish = false; }
+            if (player.status._action[0] >= 123) { nowIsWish = false; }
+            if (player.status._action[1] >= 123) { nowIsWish = false; }
         }
 
         // state or both dependant
         if (player.memories[_memIndex].isStatusStateDependant >= 123)
         {
-            if (player.globalState.fun >= 123) { fufilled = true; }
-            if (player.globalState.energy >= 123) { fufilled = true; }
-            if (player.globalState.hygene >= 123) { fufilled = true; }
-            if (player.globalState.protein >= 123) { fufilled = true; }
+            if (player.globalState.fun >= 123) { nowIsWish = false; }
+            if (player.globalState.energy >= 123) { nowIsWish = false; }
+            if (player.globalState.hygene >= 123) { nowIsWish = false; }
+            if (player.globalState.protein >= 123) { nowIsWish = false; }
         }
-        player.memories[_memIndex].isWish = fufilled;
+        player.memories[_memIndex].isWish = nowIsWish;
     }
     function _addPlayerWish(address _player, _ThoughtCategory _thotCat, uint256 _thotIndex) internal
     {
