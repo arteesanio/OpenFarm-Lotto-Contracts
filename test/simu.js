@@ -86,6 +86,7 @@ describe('Simulation Contract', () => {
 		})
 
 		it('Should fufill wish', async () => {
+			console.log("\n\n\n\n*** Should fufill wish ****")
 			let aPlayerResult = await SIMULATION.connect(addr2).createPlayer(SIMULATION.address,"player 2")
 			let addEnergyTx = await SIMULATION.connect(addr2).addPlayerEnergy(208,208,208,208)
 
@@ -98,6 +99,13 @@ describe('Simulation Contract', () => {
 				)
 				// console.log(aPlayerMainWish.birthunix.toString(),"\n\n\n")
 			}
+			let selectedPplayer2 = await SIMULATION.players(addr2.address)
+			console.table({
+				energy: selectedPplayer2.globalState.energy,
+				fun: selectedPplayer2.globalState.fun,
+				hygene: selectedPplayer2.globalState.hygene,
+				protein: selectedPplayer2.globalState.protein,
+			})
 			let aPlayerFufillWish = await SIMULATION.connect(addr2).fufillWish(3) // first wish ?
 			{
 				let aPlayerMainWish = await SIMULATION.connect(addr2).getMyMemory(3) // first wish ?
@@ -108,10 +116,12 @@ describe('Simulation Contract', () => {
 				)
 			}
 
-			let selectedPplayer2 = await SIMULATION.players(addr2.address)
-			console.table({
-				wishCount: selectedPplayer2.wishCount.toString(),
-			})
+			{
+				let selectedPplayer2222 = await SIMULATION.players(addr2.address)
+				console.table({
+					wishCount: selectedPplayer2222.wishCount.toString(),
+				})
+			}
 
 
 		})
