@@ -12,13 +12,13 @@ import "hardhat/console.sol";
 
 contract TheOpenSimulation {
 
-    enum _ThoughtCategory { supernatural, ambition, art, hazards, logic, pets, social, sports }
+    enum ThoughtCategory { supernatural, ambition, art, hazards, logic, pets, social, sports }
     struct Thought {
         uint256 collectiveIndex;
         uint256 id;
         string title;
         uint256 birthunix;
-        _ThoughtCategory cat;
+        ThoughtCategory cat;
     }
 
     // All relevant information regarding ethereal stats of a player.
@@ -37,7 +37,7 @@ contract TheOpenSimulation {
         uint256 id;
         string title;
         uint256 birthunix;
-        _ThoughtCategory thoughtCat;
+        ThoughtCategory thoughtCat;
         uint256 thoughtIndex;
         uint8 isStatusStateDependant;
         bool isWish;
@@ -122,14 +122,14 @@ contract TheOpenSimulation {
         player.birthunix = block.timestamp;
         player.deadline = block.timestamp + 42 days;
 
-        __addThought(Thought(0, 0, "Supernatural Memory", block.timestamp, _ThoughtCategory.supernatural));
-        __addThought(Thought(0, 0, "Ambition Memory", block.timestamp, _ThoughtCategory.ambition));
-        __addThought(Thought(0, 0, "Art Memory", block.timestamp, _ThoughtCategory.art));
-        __addThought(Thought(0, 0, "Hazards Memory", block.timestamp, _ThoughtCategory.hazards));
-        __addThought(Thought(0, 0, "Logic Memory", block.timestamp, _ThoughtCategory.logic));
-        __addThought(Thought(0, 0, "Pets Memory", block.timestamp, _ThoughtCategory.pets));
-        __addThought(Thought(0, 0, "Social Memory", block.timestamp, _ThoughtCategory.social));
-        __addThought(Thought(0, 0, "Sports Memory", block.timestamp, _ThoughtCategory.sports));
+        __addThought(Thought(0, 0, "Supernatural Memory", block.timestamp, ThoughtCategory.supernatural));
+        __addThought(Thought(0, 0, "Ambition Memory", block.timestamp, ThoughtCategory.ambition));
+        __addThought(Thought(0, 0, "Art Memory", block.timestamp, ThoughtCategory.art));
+        __addThought(Thought(0, 0, "Hazards Memory", block.timestamp, ThoughtCategory.hazards));
+        __addThought(Thought(0, 0, "Logic Memory", block.timestamp, ThoughtCategory.logic));
+        __addThought(Thought(0, 0, "Pets Memory", block.timestamp, ThoughtCategory.pets));
+        __addThought(Thought(0, 0, "Social Memory", block.timestamp, ThoughtCategory.social));
+        __addThought(Thought(0, 0, "Sports Memory", block.timestamp, ThoughtCategory.sports));
     }
 
     function __addThought(Thought memory _thot) internal {
@@ -137,7 +137,7 @@ contract TheOpenSimulation {
         thoughts[uint(_thot.cat)].push(Thought(collectiveThoughtIndex, thoughts[uint(_thot.cat)].length, _thot.title, _thot.birthunix, _thot.cat));
     }
 
-    function __addPlayerMemory(address _player, _ThoughtCategory _thotCat, uint256 _thotIndex) internal
+    function __addPlayerMemory(address _player, ThoughtCategory _thotCat, uint256 _thotIndex) internal
     {
         Player storage player = players[_player];
         player.memories.push(Memori(
@@ -208,11 +208,17 @@ contract TheOpenSimulation {
         } else {
             player.globalState.protein /= 2;
         }
+
+
+        // focus[0] | focus on senses is inversly proportional to the fun of a player 
+        // focus[1] | focus force is directly proportional to the energy of a player 
+        player.status._focus[0] = 255-player.globalState.fun;        
+        player.status._focus[1] = player.globalState.energy;        
         
 
         // deterministic random category based on block timestamp,
         // so all players that fetch at the same time, get the same category
-        _ThoughtCategory randomThoughtCat = _ThoughtCategory(block.timestamp % 7);
+        ThoughtCategory randomThoughtCat = ThoughtCategory(block.timestamp % 7);
 
         // deterministic random category based on block timestamp + player birth,
         // so all players that fetch at the same time with same birth, get the same wish
@@ -258,7 +264,7 @@ contract TheOpenSimulation {
         player.memories[_memIndex].isWish = nowIsWish;
         player.wishCount++;
     }
-    function _addPlayerWish(address _player, _ThoughtCategory _thotCat, uint256 _thotIndex) internal
+    function _addPlayerWish(address _player, ThoughtCategory _thotCat, uint256 _thotIndex) internal
     {
         Player storage player = players[_player];
         
@@ -302,7 +308,7 @@ contract TheOpenSimulation {
 
         uint256[] memory deterministicRandomResults = expand(block.timestamp, 3);
         for (uint256 i = 0; i < 3; i++) {
-            _ThoughtCategory randomThoughtCat = _ThoughtCategory(deterministicRandomResults[i] % 7);
+            ThoughtCategory randomThoughtCat = ThoughtCategory(deterministicRandomResults[i] % 7);
             uint256 randomThoughtIndex = block.timestamp % thoughts[uint(randomThoughtCat)].length;
             __addPlayerMemory(msg.sender,randomThoughtCat,randomThoughtIndex);
         }
