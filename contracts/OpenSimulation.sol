@@ -158,7 +158,7 @@ contract TheOpenSimulation {
     {
         Player storage forgottenPlayer = players[_forgottenPlayer];
         require(forgottenPlayer.lastSave > 0, "UNUSED_PLAYER");
-        require(block.timestamp > forgottenPlayer.lastSave + 48 hours, "NOT_FORGOTTEN");
+        require(block.timestamp > forgottenPlayer.lastSave + 48 minutes, "NOT_FORGOTTEN");
 
         forgottenPlayer.globalState.energy /= 2;
         forgottenPlayer.globalState.fun /= 2;
@@ -179,7 +179,7 @@ contract TheOpenSimulation {
         public alivePlayerOnly(msg.sender)
     {
         Player storage player = players[msg.sender];
-        require(player.lastSave == 0 || block.timestamp > player.lastSave + 12 hours, "RECENT_ACTIVITY");
+        require(player.lastSave == 0 || block.timestamp > player.lastSave + 12 minutes, "RECENT_ACTIVITY");
 
         if (uint256(player.globalState.energy) + uint256(_energy) < 255)
         {
@@ -250,7 +250,7 @@ contract TheOpenSimulation {
         // if (player.memories[_memIndex].isStatusStateDependant >= 255) { // both dependant
 
         // status dependant or both dependent
-        if (player.memories[_memIndex].isStatusStateDependant < 123 || player.memories[_memIndex].isStatusStateDependant >= 255)
+        if (player.memories[_memIndex].isStatusStateDependant < 100 || player.memories[_memIndex].isStatusStateDependant >= 200)
         {
             require (player.status._focus[0] >= 123, "NOT_ENOUGH_STAT status._focus");
             require (player.status._focus[1] >= 123, "NOT_ENOUGH_STAT status._focus force");
@@ -262,7 +262,7 @@ contract TheOpenSimulation {
         }
 
         // state or both dependant
-        if (player.memories[_memIndex].isStatusStateDependant >= 123)
+        if (player.memories[_memIndex].isStatusStateDependant >= 100)
         {
             require (player.globalState.fun >= 123, "NOT_ENOUGH_STAT globalState.fun");
             require (player.globalState.energy >= 123, "NOT_ENOUGH_STAT globalState.energy");
